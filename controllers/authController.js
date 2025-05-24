@@ -6,24 +6,24 @@ const pool = require('../config/db');
 dotenv.config();
 
 // Token generator
-const generateToken = (user) =>
+const generateToken = (user,rememberMe) =>
   jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, {
-    expiresIn: '1d',
+    expiresIn: rememberMe ? '7d' : '1d', // Duration for rememberMe
   });
 
 // Set token cookie
-const setTokenCookie = (res, token) => {
+const setTokenCookie = (res, token,rememberMe) => {
   res.cookie('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: rememberMe? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
   });
 };
 
 // Register
 const register = async (req, res) => {
-  const { username, email, password, confirmPassword } = req.body;
+  const { username, email, password, confirmPassword ,rememberMe} = req.body;
 
   if (!username || !email || !password || !confirmPassword) {
     return res.status(400).json({ message: 'All fields are required' });
@@ -51,8 +51,8 @@ const register = async (req, res) => {
     );
 
     const user = result.rows[0];
-    const token = generateToken(user);
-    setTokenCookie(res, token);
+    const token = generateToken(user,rememberMe);
+    setTokenCookie(res, token,rememberMe);
 
     res.status(201).json({
       message: 'User registered successfully',
@@ -66,8 +66,8 @@ const register = async (req, res) => {
 
 // Login
 const login = async (req, res) => {
-  const { email, password } = req.body;
-
+  const { email, password ,rememberMe } = req.body;
+  
   if (!email || !password)
     return res.status(400).json({ message: 'All fields are required' });
 
@@ -83,8 +83,8 @@ const login = async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ message: 'Invalid email or password' });
 
-    const token = generateToken(user);
-    setTokenCookie(res, token);
+    const token = generateToken(user,rememberMe);
+    setTokenCookie(res, token ,rememberMe);
 
     res.json({
       message: 'Login successful',
