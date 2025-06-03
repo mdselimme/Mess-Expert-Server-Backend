@@ -11,5 +11,11 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
+
+// -----------------------------------------
+//supabase database linkup
+
+
+
 module.exports = pool;
 

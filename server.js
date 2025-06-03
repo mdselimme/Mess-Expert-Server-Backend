@@ -8,14 +8,15 @@ dotenv.config();
 const authRoutes = require('./routes/authRoutes');
 const mealRoutes = require('./routes/mealRoutes');
 const messRoutes = require('./routes/messRoutes');
+const depositRoutes = require('./routes/depositRoutes')
 
 const PORT = process.env.PORT || 5000;
-const app = express(); 
+const app = express();
 
 //middleware
-app.use(cors({ 
+app.use(cors({
   origin: 'http://localhost:3000',
-  credentials: true 
+  credentials: true
 }));
 
 
@@ -25,6 +26,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/meals', mealRoutes);
 app.use('/api/mess', messRoutes);
+app.use('/api/record', depositRoutes)
 
 
 app.get("/", (req, res) => {
