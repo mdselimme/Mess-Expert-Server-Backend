@@ -6,18 +6,18 @@ const pool = require('../config/db');
 dotenv.config();
 
 // Token generator
-const generateToken = (user,rememberMe) =>
+const generateToken = (user, rememberMe) =>
   jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, {
     expiresIn: rememberMe ? '7d' : '1d', // Duration for rememberMe
   });
 
 // Set token cookie
-const setTokenCookie = (res, token,rememberMe) => {
+const setTokenCookie = (res, token, rememberMe) => {
   res.cookie('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-    maxAge: rememberMe? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
+    maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
   });
 };
 
@@ -61,7 +61,7 @@ const register = async (req, res) => {
       await pool.query(
         `INSERT INTO Members (name, phone_number,
         email, joining_date, user_id)
-         VALUES ($1,'your phone number', $2, CURRENT_DATE, $3)`,
+         VALUES ($1,'your phone number1', $2, CURRENT_DATE, $3)`,
         [username, email, user.id]
       );
 
@@ -86,8 +86,8 @@ const register = async (req, res) => {
 
 // Login
 const login = async (req, res) => {
-  const { email, password ,rememberMe } = req.body;
-  
+  const { email, password, rememberMe } = req.body;
+
   if (!email || !password)
     return res.status(400).json({ message: 'All fields are required' });
 
@@ -103,12 +103,12 @@ const login = async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ message: 'Invalid email or password' });
 
-    const token = generateToken(user,rememberMe);
-    setTokenCookie(res, token ,rememberMe);
+    const token = generateToken(user, rememberMe);
+    setTokenCookie(res, token, rememberMe);
 
     res.json({
       message: 'Login successful',
-      user: { id: user.id, username: user.username, email: user.email },
+      user: { id: user.id, username: user.username, email: user.email, token: token }, //mahtab- returned token to use in postman
     });
   } catch (err) {
     console.error('Login error:', err);
