@@ -1,42 +1,25 @@
-const express = require("express");
-const cors = require("cors");
-const cookieParser = require('cookie-parser');
+const app = require("./src/app/app");
 const dotenv = require("dotenv");
-
+const pool = require("./src/config/db");
 dotenv.config();
 
-const authRoutes = require('./routes/authRoutes');
-const mealRoutes = require('./routes/mealRoutes');
-const messRoutes = require('./routes/messRoutes');
-const depositRoutes = require('./routes/depositRoutes')
-const expensesRoutes = require('./routes/expensesRoutes')
-
 const PORT = process.env.PORT || 5000;
-const app = express();
 
-//middleware
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
+let server;
 
+const mainServer = async () => {
+  try {
+    const result = await pool.query('SELECT NOW()');
+    console.log('✅ Connected to the database successfully at:', result.rows[0].now);
+    server = app.listen(PORT, () => {
+      console.log(`server has started on port http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to connect to the database:', error.message);
+  }
+};
 
-app.use(express.json()); //req.body
-app.use(cookieParser());
-
-app.use('/api/auth', authRoutes);
-app.use('/api/meals', mealRoutes);
-app.use('/api/mess', messRoutes);
-app.use('/api/record', depositRoutes, expensesRoutes)
-
-
-app.get("/", (req, res) => {
-  res.send("Hello from messExpert backend!");
-});
+mainServer();
 
 
-app.listen(PORT, () => {
-  console.log(`server has started on port ${PORT}`);
-});
 
-module.exports = app;

@@ -23,14 +23,13 @@ const setTokenCookie = (res, token, rememberMe) => {
 
 // Register
 const register = async (req, res) => {
-  const { username, email, password, confirmPassword, rememberMe } = req.body;
 
-  if (!username || !email || !password || !confirmPassword) {
+  console.log(req.body)
+
+  const { fullName, username, email, password, rememberMe } = req.body;
+
+  if (!username || !email || !password || !fullName) {
     return res.status(400).json({ message: 'All fields are required' });
-  }
-
-  if (password !== confirmPassword) {
-    return res.status(400).json({ message: 'Passwords do not match' });
   }
 
   try {
@@ -51,8 +50,8 @@ const register = async (req, res) => {
     try {
       // Create user
       const userResult = await pool.query(
-        'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
-        [username, email, hashedPassword]
+        'INSERT INTO users (fullName, username, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
+        [fullName, username, email, hashedPassword]
       );
 
       const user = userResult.rows[0];
@@ -60,8 +59,8 @@ const register = async (req, res) => {
       // Create member record
       await pool.query(
         `INSERT INTO Members (name, phone_number,
-        email, joining_date, user_id)
-         VALUES ($1,'your phone number1', $2, CURRENT_DATE, $3)`,
+         email, joining_date, user_id)
+          VALUES ($1,'your phone number1', $2, CURRENT_DATE, $3)`,
         [username, email, user.id]
       );
 
