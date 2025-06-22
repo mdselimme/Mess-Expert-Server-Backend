@@ -3,13 +3,6 @@ const app = express();
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
 
-const authRoutes = require('../routes/authRoutes');
-const mealRoutes = require('../routes/mealRoutes');
-const messRoutes = require('../routes/messRoutes');
-const depositRoutes = require('../routes/depositRoutes')
-const expensesRoutes = require('../routes/expensesRoutes')
-
-
 
 //middleware
 app.use(cors({
@@ -17,6 +10,11 @@ app.use(cors({
     credentials: true
 }));
 
+const authRoutes = require('../routes/authRoutes');
+const mealRoutes = require('../routes/mealRoutes');
+const messRoutes = require('../routes/messRoutes');
+const depositRoutes = require('../routes/depositRoutes')
+const expensesRoutes = require('../routes/expensesRoutes')
 
 app.use(express.json()); //req.body
 app.use(cookieParser());
@@ -24,21 +22,20 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/meals', mealRoutes);
 app.use('/api/mess', messRoutes);
-app.use('/api/record', depositRoutes, expensesRoutes)
+app.use('/api/record', depositRoutes, expensesRoutes);
 
-
-
-
-
-
-
-
-
-
-
+// Not Found Route 
+app.use((req, res, next) => {
+    res.json({
+        message: "Url is wrong. Didn't match any route."
+    })
+});
 
 app.get("/", (req, res) => {
-    res.send("Hello from messExpert backend!");
+    res.send({
+        running: "Hello from messExpert backend!",
+        version: 0.1
+    });
 });
 
 
