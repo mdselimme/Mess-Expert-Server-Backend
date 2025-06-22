@@ -24,6 +24,15 @@ app.use('/api/meals', mealRoutes);
 app.use('/api/mess', messRoutes);
 app.use('/api/record', depositRoutes, expensesRoutes);
 
+//root route
+app.get("/", (req, res) => {
+    res.send({
+        running: "Hello from messExpert backend!",
+        version: 0.1
+    });
+});
+
+
 // Not Found Route 
 app.use((req, res, next) => {
     res.json({
@@ -31,12 +40,6 @@ app.use((req, res, next) => {
     })
 });
 
-app.get("/", (req, res) => {
-    res.send({
-        running: "Hello from messExpert backend!",
-        version: 0.1
-    });
-});
 
 
 
