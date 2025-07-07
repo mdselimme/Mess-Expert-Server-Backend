@@ -19,10 +19,10 @@ const expensesRoutes = require('../routes/expensesRoutes')
 
 
 
-app.use('/api/auth', authRoutes);
-app.use('/api/meals', mealRoutes);
-app.use('/api/mess', messRoutes);
-app.use('/api/record', depositRoutes, expensesRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/meals', mealRoutes);
+app.use('/api/v1/mess', messRoutes);
+app.use('/api/v1/record', depositRoutes, expensesRoutes);
 
 //root route
 app.get("/", (req, res) => {
