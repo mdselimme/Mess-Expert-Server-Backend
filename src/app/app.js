@@ -2,7 +2,8 @@ const express = require('express');
 const app = express();
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
-
+app.use(express.json()); //req.body
+app.use(cookieParser());
 
 //middleware
 app.use(cors({
@@ -16,8 +17,7 @@ const messRoutes = require('../routes/messRoutes');
 const depositRoutes = require('../routes/depositRoutes')
 const expensesRoutes = require('../routes/expensesRoutes')
 
-app.use(express.json()); //req.body
-app.use(cookieParser());
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/meals', mealRoutes);
