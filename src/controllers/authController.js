@@ -39,7 +39,7 @@ const register = async (req, res) => {
     );
 
     if (userExists.rows.length > 0) {
-      return res.status(409).json({ message: 'Username or email already in use' });
+      throw new Error("Username or email already in use")
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -70,16 +70,20 @@ const register = async (req, res) => {
       setTokenCookie(res, token, rememberMe);
 
       res.status(201).json({
+        success: true,
         message: 'User registered successfully',
         user,
       });
     } catch (err) {
       await pool.query('ROLLBACK');
-      throw err;
+      throw (err)
     }
   } catch (err) {
-    console.error('Register error:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: err.message,
+      user: null,
+    });
   }
 };
 
@@ -106,6 +110,7 @@ const login = async (req, res) => {
     setTokenCookie(res, token, rememberMe);
 
     res.json({
+      success: true,
       message: 'Login successful',
       user: { id: user.id, username: user.username, email: user.email, token: token }, //mahtab- returned token to use in postman
     });
