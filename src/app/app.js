@@ -7,7 +7,7 @@ app.use(cookieParser());
 
 //middleware
 app.use(cors({
-    origin: ['http://localhost:5173', "live-deploy-url"],
+    origin: ['http://localhost:5173', "live-deploy-url", "https://mess-expert-cline-site.vercel.app"],
     credentials: true
 }));
 
@@ -29,7 +29,7 @@ app.use('/api/v1/record', depositRoutes, expensesRoutes);
 app.get("/", (req, res) => {
     res.send({
         running: "Hello from messExpert backend!",
-        version: 0.1
+        version: 0.2
     });
 });
 
