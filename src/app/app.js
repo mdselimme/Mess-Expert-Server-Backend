@@ -7,10 +7,11 @@ app.use(cookieParser());
 
 //middleware
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:5173', "live-deploy-url"],
     credentials: true
 }));
 
+//Development Routes Import 
 const authRoutes = require('../routes/authRoutes');
 const mealRoutes = require('../routes/mealRoutes');
 const messRoutes = require('../routes/messRoutes');
@@ -18,7 +19,7 @@ const depositRoutes = require('../routes/depositRoutes')
 const expensesRoutes = require('../routes/expensesRoutes')
 
 
-
+// Development Routes Use 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/meals', mealRoutes);
 app.use('/api/v1/mess', messRoutes);
@@ -39,8 +40,6 @@ app.use((req, res, next) => {
         message: "Url is wrong. Didn't match any route."
     })
 });
-
-
 
 
 module.exports = app;
