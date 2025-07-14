@@ -2,6 +2,7 @@ const { Router } = require('express');
 const AuthRouter = require('../modules/auth/auth.route');
 const DepositRoute = require('../modules/deposit/deposit.route');
 const ExpenseRoute = require('../modules/expense/expense.route');
+const MealRoute = require('../modules/meal/meal.route');
 
 
 
@@ -19,6 +20,14 @@ const moduleRoutes = [
     {
         path: "/record",
         route: ExpenseRoute
+    },
+    {
+        path: "/meals",
+        route: MealRoute
+    },
+    {
+        path: "/mess",
+        route: MealRoute
     },
 ];
 

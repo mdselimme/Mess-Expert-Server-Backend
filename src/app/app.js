@@ -15,16 +15,11 @@ const notFoundRoute = require('../middleware/notFound');
 //Development Routes Import 
 const router = require('../router');
 
-const mealRoutes = require('../routes/mealRoutes');
-const messRoutes = require('../routes/messRoutes');
-const expensesRoutes = require('../routes/expensesRoutes');
-
 
 
 // Development Routes Use 
 app.use('/api/v1/', router);
-app.use('/api/v1/meals', mealRoutes);
-app.use('/api/v1/mess', messRoutes);
+
 
 
 //root route
