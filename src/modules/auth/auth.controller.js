@@ -2,16 +2,19 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../../config/db');
 const envVars = require('../../config/env');
+const catchAsync = require('../../utils/catchAsync');
+const sendResponse = require('../../utils/sendResponse');
+const { StatusCodes } = require('http-status-codes');
 
 // Token generator
 const generateToken = (user, rememberMe) =>
-    jwt.sign({ id: user.id, username: user.username }, envVars.JWT_SECRET, {
+    jwt.sign({ id: user.id, username: user.username, email: user.email }, envVars.JWT_SECRET, {
         expiresIn: rememberMe ? '7d' : '1d', // Duration for rememberMe
     });
 
 // Set token cookie
 const setTokenCookie = (res, token, rememberMe) => {
-    res.cookie('token', token, {
+    res.cookie('accessToken', token, {
         httpOnly: true,
         secure: envVars.NODE_ENV === 'production',
         sameSite: envVars.NODE_ENV === 'production' ? 'none' : 'strict',
@@ -36,8 +39,14 @@ const register = async (req, res) => {
             [username, email]
         );
 
-        if (userExists.rows.length > 0) {
-            throw new Error("Username or email already in use")
+        console.log(userExists.rows)
+
+        if (userExists.rows.email === email) {
+            throw new Error("Email already in use.")
+        }
+
+        if (userExists.rows.username === username) {
+            throw new Error("Username already in use.")
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -85,42 +94,42 @@ const register = async (req, res) => {
     }
 };
 
-// Login
-const login = async (req, res) => {
+// Log In User Account 
+const logInUser = catchAsync(async (req, res, next) => {
     const { email, password, rememberMe } = req.body;
 
     if (!email || !password)
         return res.status(400).json({ message: 'All fields are required' });
 
-    try {
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
-        if (result.rows.length === 0) {
-            throw new Error('Invalid User Email')
-        }
-        const user = result.rows[0];
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            throw new Error("Invalid User Password");
-        }
-
-        const token = generateToken(user, rememberMe);
-        setTokenCookie(res, token, rememberMe);
-
-        res.status(200).json({
-            success: true,
-            message: 'Login successful',
-            user: { id: user.id, username: user.username, email: user.email, token: token }, //mahtab- returned token to use in postman
-        });
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: err.message,
-            user: null,
-        });
+    if (result.rows.length === 0) {
+        throw new Error('Invalid User Email')
     }
-};
+    const user = result.rows[0];
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+        throw new Error("Invalid User Password");
+    }
+
+    const token = generateToken(user, rememberMe);
+    setTokenCookie(res, token, rememberMe);
+
+    const { password: _, ...rest } = result.rows[0];
+
+    const userResult = {
+        user: rest,
+        accessToken: token
+    }
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        message: "User logged in Successfully.",
+        data: userResult,
+        success: true,
+    })
+});
 
 // Logout
 const logout = (req, res) => {
@@ -165,6 +174,6 @@ const checkAuth = [
     },
 ];
 
-const AuthController = { register, login, logout, checkAuth };
+const AuthController = { register, logout, checkAuth, logInUser };
 
 module.exports = AuthController;
