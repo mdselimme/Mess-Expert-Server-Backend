@@ -16,7 +16,8 @@ const authRoutes = require('../routes/authRoutes');
 const mealRoutes = require('../routes/mealRoutes');
 const messRoutes = require('../routes/messRoutes');
 const depositRoutes = require('../routes/depositRoutes')
-const expensesRoutes = require('../routes/expensesRoutes')
+const expensesRoutes = require('../routes/expensesRoutes');
+const globalErrorHandler = require('../middleware/globalErrorHandler');
 
 
 // Development Routes Use 
@@ -33,6 +34,8 @@ app.get("/", (req, res) => {
     });
 });
 
+// Global Error handler 
+app.use(globalErrorHandler)
 
 // Not Found Route 
 app.use((req, res, next) => {
