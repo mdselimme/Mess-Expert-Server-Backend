@@ -3,6 +3,7 @@ const AuthRouter = require('../modules/auth/auth.route');
 const DepositRoute = require('../modules/deposit/deposit.route');
 const ExpenseRoute = require('../modules/expense/expense.route');
 const MealRoute = require('../modules/meal/meal.route');
+const MessRoute = require('../modules/mess/mess.route');
 
 
 
@@ -27,7 +28,7 @@ const moduleRoutes = [
     },
     {
         path: "/mess",
-        route: MealRoute
+        route: MessRoute
     },
 ];
 
