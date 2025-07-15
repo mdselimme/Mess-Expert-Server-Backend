@@ -1,3 +1,13 @@
+--CREATE TABLE 
+CREATE TABLE public.users (
+  id SERIAL PRIMARY KEY,
+  fullName VARCHAR(150) NOT NULL,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password TEXT NOT NULL
+);
+
+
 -- Members Table
 CREATE TABLE Members (
     member_id SERIAL PRIMARY KEY,
