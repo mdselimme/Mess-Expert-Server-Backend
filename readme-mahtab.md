@@ -1,7 +1,6 @@
 # Mess Expert Backend Server - Mahtab
 
 ## Api documentation
-<<<<<<< HEAD
 
 **Base URL:**
 ```
@@ -136,7 +135,7 @@ All endpoints require a valid JWT token in the request headers:
    ```
    npm dun dev
    ```
-5. The API will be available at `http://localhost:5000/api/v1/`
+5. The API will be available at `http://localhost:5000/api/v1/record`
 
 
 ##  Notes
@@ -145,5 +144,3 @@ All endpoints require a valid JWT token in the request headers:
 - `date` must be in `YYYY-MM-DD` format. If omitted in expenses, current date will be used.
 - Only authenticated users with the role `admin` can access these endpoints.
 - All monetary fields (`amount`) must be numbers.
-=======
->>>>>>> 484e5c63a148966d6d11c75735bfba52c459e109
