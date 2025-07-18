@@ -3,7 +3,7 @@ CREATE TABLE Members (
     member_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     phone_number VARCHAR(20) UNIQUE NOT NULL,
-    email VARCHAR(100),
+    image TEXT,
     role VARCHAR(20) DEFAULT 'member',
     joining_date DATE NOT NULL,
     total_deposit NUMERIC(10, 2) DEFAULT 0,

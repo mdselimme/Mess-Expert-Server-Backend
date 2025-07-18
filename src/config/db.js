@@ -1,7 +1,10 @@
 // Database connection
 const Pool = require("pg").Pool;
 const dotenv = require("dotenv");
-dotenv.config();
+const path = require("path");
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
+console.log("DB Password:", process.env.DB_PASSWORD);
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -9,7 +12,7 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
-  ssl: { rejectUnauthorized: false }
+  ssl: false
 });
 
 

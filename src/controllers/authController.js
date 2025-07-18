@@ -39,7 +39,7 @@ const register = async (req, res) => {
     );
 
     if (userExists.rows.length > 0) {
-      return res.status(409).json({ message: 'Username or email already in use' });
+      throw new Error("Username or email already in use")
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -59,9 +59,9 @@ const register = async (req, res) => {
       // Create member record
       await pool.query(
         `INSERT INTO Members (name, phone_number,
-         email, joining_date, user_id)
+         image, joining_date, user_id)
           VALUES ($1,'your phone number1', $2, CURRENT_DATE, $3)`,
-        [username, email, user.id]
+        [username, 'https://i.ibb.co/M5C3p0pd/user-image.png', user.id]
       );
 
       await pool.query('COMMIT');
@@ -70,16 +70,20 @@ const register = async (req, res) => {
       setTokenCookie(res, token, rememberMe);
 
       res.status(201).json({
+        success: true,
         message: 'User registered successfully',
         user,
       });
     } catch (err) {
       await pool.query('ROLLBACK');
-      throw err;
+      throw (err)
     }
   } catch (err) {
-    console.error('Register error:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: err.message,
+      user: null,
+    });
   }
 };
 
@@ -93,36 +97,51 @@ const login = async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
-    if (result.rows.length === 0)
-      return res.status(401).json({ message: 'Invalid email or password' });
-
+    if (result.rows.length === 0) {
+      throw new Error('Invalid User Email')
+    }
     const user = result.rows[0];
     const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!isMatch)
-      return res.status(401).json({ message: 'Invalid email or password' });
+    if (!isMatch) {
+      throw new Error("Invalid User Password");
+    }
 
     const token = generateToken(user, rememberMe);
     setTokenCookie(res, token, rememberMe);
 
-    res.json({
+    res.status(200).json({
+      success: true,
       message: 'Login successful',
       user: { id: user.id, username: user.username, email: user.email, token: token }, //mahtab- returned token to use in postman
     });
   } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: err.message,
+      user: null,
+    });
   }
 };
 
 // Logout
 const logout = (req, res) => {
-  res.clearCookie('token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-  });
-  res.json({ message: 'Logged out successfully' });
+  try {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    });
+    res.status(200).json({
+      success: true,
+      message: 'Log Out successfully',
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 };
 
 // Middleware
