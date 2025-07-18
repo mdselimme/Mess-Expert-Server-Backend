@@ -11,7 +11,7 @@ app.use(cors({
 }));
 const globalErrorHandler = require('../middleware/globalErrorHandler');
 const notFoundRoute = require('../middleware/notFound');
-require('../database/initDB');
+// require('../database/initDB');
 
 //Development Routes Import 
 const router = require('../router');

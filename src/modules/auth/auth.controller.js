@@ -5,151 +5,54 @@ const envVars = require('../../config/env');
 const catchAsync = require('../../utils/catchAsync');
 const sendResponse = require('../../utils/sendResponse');
 const { StatusCodes } = require('http-status-codes');
+const AuthServices = require('./auth.services');
 
-// Token generator
-const generateToken = (user, rememberMe) =>
-    jwt.sign({ id: user.id, username: user.username, email: user.email }, envVars.JWT_SECRET, {
-        expiresIn: rememberMe ? '7d' : '1d', // Duration for rememberMe
-    });
 
-// Set token cookie
-const setTokenCookie = (res, token, rememberMe) => {
-    res.cookie('accessToken', token, {
-        httpOnly: true,
-        secure: envVars.NODE_ENV === 'production',
-        sameSite: envVars.NODE_ENV === 'production' ? 'none' : 'strict',
-        maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
-    });
-};
+// Create An User 
+const userRegister = catchAsync(async (req, res, next) => {
 
-// Register
-const register = async (req, res) => {
+    await AuthServices.createAnUser(req.body);
 
-    console.log(req.body)
-
-    const { fullName, username, email, password, rememberMe } = req.body;
-
-    if (!username || !email || !password || !fullName) {
-        return res.status(400).json({ message: 'All fields are required' });
-    }
-
-    try {
-        const userExists = await pool.query(
-            'SELECT id FROM users WHERE username = $1 OR email = $2',
-            [username, email]
-        );
-
-        console.log(userExists.rows)
-
-        if (userExists.rows.email === email) {
-            throw new Error("Email already in use.")
-        }
-
-        if (userExists.rows.username === username) {
-            throw new Error("Username already in use.")
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Start a transaction
-        await pool.query('BEGIN');
-
-        try {
-            // Create user
-            const userResult = await pool.query(
-                'INSERT INTO users (fullName, username, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
-                [fullName, username, email, hashedPassword]
-            );
-
-            const user = userResult.rows[0];
-
-            // Create member record
-            await pool.query(
-                `INSERT INTO Members (name, phone_number,
-         image, joining_date, user_id)
-          VALUES ($1,'your phone number1', $2, CURRENT_DATE, $3)`,
-                [username, 'https://i.ibb.co/M5C3p0pd/user-image.png', user.id]
-            );
-
-            await pool.query('COMMIT');
-
-            const token = generateToken(user, rememberMe);
-            setTokenCookie(res, token, rememberMe);
-
-            res.status(201).json({
-                success: true,
-                message: 'User registered successfully',
-                user,
-            });
-        } catch (err) {
-            await pool.query('ROLLBACK');
-            throw (err)
-        }
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: err.message,
-            user: null,
-        });
-    }
-};
-
-// Log In User Account 
-const logInUser = catchAsync(async (req, res, next) => {
-    const { email, password, rememberMe } = req.body;
-
-    if (!email || !password)
-        return res.status(400).json({ message: 'All fields are required' });
-
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
-    if (result.rows.length === 0) {
-        throw new Error('Invalid User Email')
-    }
-    const user = result.rows[0];
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-        throw new Error("Invalid User Password");
-    }
-
-    const token = generateToken(user, rememberMe);
-    setTokenCookie(res, token, rememberMe);
-
-    const { password: _, ...rest } = result.rows[0];
-
-    const userResult = {
-        user: rest,
-        accessToken: token
-    }
-
+    // send response
     sendResponse(res, {
         statusCode: StatusCodes.OK,
-        message: "User logged in Successfully.",
-        data: userResult,
+        message: "User Account Create Successfully.",
+        data: null,
         success: true,
     })
 });
 
-// Logout
-const logout = (req, res) => {
-    try {
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: envVars.NODE_ENV === 'production',
-            sameSite: envVars.NODE_ENV === 'production' ? 'none' : 'strict',
-        });
-        res.status(200).json({
-            success: true,
-            message: 'Log Out successfully',
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-};
+// Log In User Account 
+const logInUser = catchAsync(async (req, res, next) => {
+
+    const payload = req.body;
+
+    const usersResult = await AuthServices.logInUser(res, payload)
+
+    // send response
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        message: "User logged in Successfully.",
+        data: usersResult,
+        success: true,
+    })
+});
+
+// User Log Out 
+const userLogOut = catchAsync(async (req, res, next) => {
+    res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: envVars.NODE_ENV === 'production',
+        sameSite: envVars.NODE_ENV === 'production' ? 'none' : 'strict',
+    });
+    // send response
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        message: "User logged Out Successfully.",
+        data: null,
+        success: true,
+    })
+});
 
 // Middleware
 const verifyToken = (req, res, next) => {
@@ -174,6 +77,6 @@ const checkAuth = [
     },
 ];
 
-const AuthController = { register, logout, checkAuth, logInUser };
+const AuthController = { userLogOut, userRegister, checkAuth, logInUser };
 
 module.exports = AuthController;
