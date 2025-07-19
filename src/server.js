@@ -1,9 +1,9 @@
 const app = require("./app/app");
-const dotenv = require("dotenv");
 const pool = require("./config/db");
-dotenv.config();
+const envVars = require("./config/env");
 
-const PORT = process.env.PORT || 5000;
+
+const PORT = envVars.PORT || 5000;
 
 let server;
 

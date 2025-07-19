@@ -1,8 +1,8 @@
-const pool = require('../config/db');
 const fs = require('fs');
 const path = require('path');
+const pool = require('../config/db');
 
-const schema = fs.readFileSync(path.join(__dirname, '../models/messExpertSchema.sql')).toString();
+const schema = fs.readFileSync(path.join(__dirname, '../dbSchemaModels/messExpertSchema.sql')).toString();
 
 pool.query(schema)
   .then(() => {

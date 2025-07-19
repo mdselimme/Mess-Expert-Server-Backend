@@ -1,4 +1,5 @@
-const db = require('../config/db');
+const pool = require("../../config/db");
+
 
 const ExpensesAdd = async (req, res) => {
     try {
@@ -54,7 +55,7 @@ const ExpensesAdd = async (req, res) => {
         }
 
         // getting userId
-        const result2 = await db.query("SELECT id FROM users WHERE username = $1", [username]);
+        const result2 = await pool.query("SELECT id FROM users WHERE username = $1", [username]);
 
         if (result2.rows.length === 0) {
             return res.status(404).json({
@@ -137,4 +138,7 @@ const ExpensesAdd = async (req, res) => {
     }
 };
 
-module.exports = { ExpensesAdd };
+
+const ExpenseController = { ExpensesAdd };
+
+module.exports = ExpenseController;
