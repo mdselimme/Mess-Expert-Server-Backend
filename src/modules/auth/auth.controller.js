@@ -1,6 +1,4 @@
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const pool = require('../../config/db');
 const envVars = require('../../config/env');
 const catchAsync = require('../../utils/catchAsync');
 const sendResponse = require('../../utils/sendResponse');
@@ -57,7 +55,7 @@ const userLogOut = catchAsync(async (req, res, next) => {
 // Middleware
 const verifyToken = (req, res, next) => {
     const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+    if (!token) return res.status(401).json({ message: 'Unauthorized user' });
 
     try {
         const decoded = jwt.verify(token, envVars.JWT_SECRET);
@@ -69,6 +67,19 @@ const verifyToken = (req, res, next) => {
     }
 };
 
+// Get My Data 
+const getMyDataByToken = catchAsync(async (req, res, next) => {
+
+    const user = await AuthServices.getMyDataByToken(req.id);
+    // send response
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        message: "User Data Retrieved Successfully.",
+        data: user,
+        success: true,
+    })
+})
+
 // Check Auth
 const checkAuth = [
     verifyToken,
@@ -77,6 +88,6 @@ const checkAuth = [
     },
 ];
 
-const AuthController = { userLogOut, userRegister, checkAuth, logInUser };
+const AuthController = { userLogOut, userRegister, checkAuth, logInUser, getMyDataByToken };
 
 module.exports = AuthController;

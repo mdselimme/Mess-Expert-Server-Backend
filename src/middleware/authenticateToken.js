@@ -1,20 +1,23 @@
 const jwt = require('jsonwebtoken');
+const AppError = require('../errorHelpers/AppError');
+const { StatusCodes } = require('http-status-codes');
+const envVars = require('../config/env');
+const catchAsync = require('../utils/catchAsync');
 
-// Middleware to verify JWT
-const authenticateToken = (req, res, next) => {
-    const token = req.cookies?.token; // Ensure cookies exist
+
+// MiddleWare for verify Jwt 
+const authenticateToken = catchAsync(async (req, res, next) => {
+    const token = req.cookies?.accessToken;
 
     if (!token) {
-        return res.status(401).json({ message: 'Not authenticated. Token missing in cookies.' });
+        throw new AppError(StatusCodes.FORBIDDEN, "User Not Authenticated. Token is missing.")
+        // return res.status(401).json({ message: 'Not authenticated. Token missing in cookies.' });
     }
+    const decoded = jwt.verify(token, envVars.JWT_SECRET);
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ message: 'Invalid or expired token.' });
-        }
-        req.user = user;
-        next();
-    });
-};
+    req.id = decoded.id;
+
+    next();
+})
 
 module.exports = authenticateToken;

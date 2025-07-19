@@ -9,9 +9,9 @@ const envVars = require("../../config/env");
 
 // Create An User
 const createAnUser = async (payload) => {
-    const { fullName, username, email, password, rememberMe } = payload;
+    const { fullName, username, email, password } = payload;
 
-    if (!username || !email || !password || !fullName || !rememberMe) {
+    if (!username || !email || !password || !fullName) {
         throw new AppError(StatusCodes.BAD_REQUEST, "All fields are required.");
     }
 
@@ -78,7 +78,7 @@ const logInUser = async (res, payload) => {
         throw new AppError(StatusCodes.BAD_REQUEST, "Invalid User Password");
     }
     // get member by user id 
-    const memberResult = await pool.query('SELECT * FROM members WHERE member_id = $1', [user.id]);
+    const memberResult = await pool.query('SELECT * FROM members WHERE user_id = $1', [user.id]);
     // generate token adn setTokenCookie 
     const token = generateToken(user, rememberMe);
     setTokenCookie(res, token, rememberMe);
@@ -94,10 +94,23 @@ const logInUser = async (res, payload) => {
 };
 
 
+// Get User Data By Token 
+const getMyDataByToken = async (payload) => {
 
+    const userFind = await pool.query('SELECT * FROM users WHERE id = $1', [payload]);
 
+    if (!userFind.rows[0]) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid User Id')
+    }
+    const user = userFind.rows[0];
+    // get member by user id 
+    const memberResult = await pool.query('SELECT * FROM members WHERE user_id = $1', [user.id]);
+    // password  remove
+    const { password: _, ...rest } = user;
+    // merge member and user object 
+    const userResult = { ...rest, ...memberResult.rows[0] };
+    return userResult;
+};
 
-
-
-const AuthServices = { logInUser, createAnUser }
+const AuthServices = { logInUser, createAnUser, getMyDataByToken }
 module.exports = AuthServices;
