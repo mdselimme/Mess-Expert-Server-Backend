@@ -5,8 +5,6 @@ const ExpenseRoute = require('../modules/expense/expense.route');
 const MealRoute = require('../modules/meal/meal.route');
 const MessRoute = require('../modules/mess/mess.route');
 
-
-
 const router = Router();
 
 const moduleRoutes = [

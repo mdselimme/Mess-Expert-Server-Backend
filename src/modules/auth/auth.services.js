@@ -45,7 +45,7 @@ const createAnUser = async (payload) => {
     await pool.query(
         `INSERT INTO Members (name, phone_number,
          image, joining_date, user_id)
-          VALUES ($1,'your phone number1', $2, CURRENT_DATE, $3)`,
+          VALUES ($1,'your phone number', $2, CURRENT_DATE, $3)`,
         [username, 'https://i.ibb.co/M5C3p0pd/user-image.png', user.id]
     );
 

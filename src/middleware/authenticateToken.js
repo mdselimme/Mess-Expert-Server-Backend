@@ -16,6 +16,7 @@ const authenticateToken = catchAsync(async (req, res, next) => {
     const decoded = jwt.verify(token, envVars.JWT_SECRET);
 
     req.id = decoded.id;
+    req.user = decoded; 
 
     next();
 })
