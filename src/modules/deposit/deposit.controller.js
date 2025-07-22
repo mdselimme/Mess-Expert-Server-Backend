@@ -1,6 +1,7 @@
-const pool = require("../config/db");
+const pool = require("../../config/db");
 
-const Deposit = async (req, res) => {
+
+const createADeposit = async (req, res) => {
     try {
         const requester_id = req.user.id;
 
@@ -99,4 +100,6 @@ const Deposit = async (req, res) => {
     }
 };
 
-module.exports = { Deposit };
+const DepositController = { createADeposit }
+
+module.exports = DepositController;
