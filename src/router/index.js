@@ -4,6 +4,7 @@ const DepositRoute = require('../modules/deposit/deposit.route');
 const ExpenseRoute = require('../modules/expense/expense.route');
 const MealRoute = require('../modules/meal/meal.route');
 const MessRoute = require('../modules/mess/mess.route');
+const AddMemberRoute = require("../modules/MemberAdd/addmember.route")
 
 const router = Router();
 
@@ -27,6 +28,10 @@ const moduleRoutes = [
     {
         path: "/mess",
         route: MessRoute
+    },
+    {
+        path: "/mess",
+        route: AddMemberRoute
     },
 ];
 
