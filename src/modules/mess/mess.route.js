@@ -10,6 +10,7 @@ router.post('/:messId/add-member', authenticateToken, MessController.addMemberTo
 router.get('/:messId/summary', authenticateToken, MessController.getMessSummary);
 router.get('/:messId/members/summary', authenticateToken, MessController.getAllMemberSummary);
 router.get('/:messId/member/me/summary', authenticateToken, MessController.getPersonalSummary);
+router.get('/:messId/mess-members', authenticateToken, MessController.getMessMembers);
 
 
 const MessRoute = router;
