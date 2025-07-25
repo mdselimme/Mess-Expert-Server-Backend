@@ -15,7 +15,7 @@ const createMess = async (req, res) => {
             'SELECT member_id, role FROM Members WHERE user_id = $1',
             [userId]
         );
-       
+
         let memberId;
         if (memberResult.rows.length === 0) {
             const userResult = await pool.query('SELECT username, email FROM users WHERE id = $1', [userId]);
@@ -177,12 +177,12 @@ const getMessMembers = async (req, res) => {
              JOIN MemberMess mm ON m.member_id = mm.member_id
              WHERE mm.mess_id = $1
              ORDER BY m.role DESC, m.joining_date ASC`,
-             [messId] 
+            [messId]
         );
 
         res.json({
             members: members.rows,
-            total_members: members.rows.length 
+            total_members: members.rows.length
         });
     } catch (err) {
         console.error(err);
@@ -197,23 +197,23 @@ function getMonthDateRange(month) {
     return { start, end: end.toISOString().slice(0, 10) };
 }
 
-const findValue = async(messId, start, end) => {
+const findValue = async (messId, start, end) => {
     const totalMeal = await pool.query(
-            `SELECT COUNT(*) AS total 
+        `SELECT COUNT(*) AS total 
              FROM Meals 
              WHERE mess_id=$1 AND date BETWEEN $2 AND $3`,
-            [messId, start, end]
-            );
+        [messId, start, end]
+    );
 
-            const totalMealCost = await pool.query(
-            `SELECT COALESCE(SUM(amount),0) AS total
+    const totalMealCost = await pool.query(
+        `SELECT COALESCE(SUM(amount),0) AS total
              FROM Expenses 
              WHERE mess_id=$1 AND date BETWEEN $2 AND $3 AND category='meal'`,
-            [messId, start, end]
-            ); 
-       
-            const mealRate = totalMeal.rows[0].total > 0 ? (parseFloat(totalMealCost.rows[0].total) / parseFloat(totalMeal.rows[0].total)).toFixed(2) : '0.00';
-     return {totalMeal, totalMealCost, mealRate};
+        [messId, start, end]
+    );
+
+    const mealRate = totalMeal.rows[0].total > 0 ? (parseFloat(totalMealCost.rows[0].total) / parseFloat(totalMeal.rows[0].total)).toFixed(2) : '0.00';
+    return { totalMeal, totalMealCost, mealRate };
 }
 
 const getMessSummary = async (req, res) => {
@@ -229,8 +229,8 @@ const getMessSummary = async (req, res) => {
             [messId, start, end]
         );
 
-        const {totalMeal, totalMealCost, mealRate} = await findValue(messId, start, end);
-        
+        const { totalMeal, totalMealCost, mealRate } = await findValue(messId, start, end);
+
         const messBalance = (parseFloat(totalDeposit.rows[0].total) - parseFloat(totalMealCost.rows[0].total)).toFixed(2);
 
         // Other costs
@@ -278,29 +278,29 @@ const getAllMemberSummary = async (req, res) => {
             const [tMeal, tDeposit, tIndiv, tShared] = await Promise.all([
                 pool.query(`SELECT COUNT(*) AS total 
                             FROM Meals 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`, 
-                            [member.member_id, messId, start, end]),
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`,
+                    [member.member_id, messId, start, end]),
                 pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
                             FROM Deposits 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`, 
-                            [member.member_id, messId, start, end]),
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`,
+                    [member.member_id, messId, start, end]),
                 pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
                             FROM Expenses 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='individual'`, 
-                            [member.member_id, messId, start, end]),
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='individual'`,
+                    [member.member_id, messId, start, end]),
                 pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
                             FROM Expenses 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='shared'`, 
-                            [member.member_id, messId, start, end]),        
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='shared'`,
+                    [member.member_id, messId, start, end]),
             ]);
-            
-            const {totalMeal, totalMealCost, mealRate} = await findValue(messId, start, end);
+
+            const { totalMeal, totalMealCost, mealRate } = await findValue(messId, start, end);
 
             const meal = parseFloat(tMeal.rows[0].total);
             const deposit = parseFloat(tDeposit.rows[0].total);
             const indivOther = parseFloat(tIndiv.rows[0].total);
             const sharedOther = parseFloat(tShared.rows[0].total);
-            const mealCost = meal > 0 ? meal*mealRate : '0.00';
+            const mealCost = meal > 0 ? meal * mealRate : '0.00';
             const totalCost = mealCost + indivOther + sharedOther;
             const balance = deposit - totalCost;
             results.push({
@@ -339,43 +339,43 @@ const getPersonalSummary = async (req, res) => {
         const member_id = member.rows[0].member_id;
 
         const [tMeal, tDeposit, tIndiv, tShared] = await Promise.all([
-                pool.query(`SELECT COUNT(*) AS total 
+            pool.query(`SELECT COUNT(*) AS total 
                             FROM Meals 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`, 
-                            [member_id, messId, start, end]),
-                pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`,
+                [member_id, messId, start, end]),
+            pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
                             FROM Deposits 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`, 
-                            [member_id, messId, start, end]),
-                pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`,
+                [member_id, messId, start, end]),
+            pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
                             FROM Expenses 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='individual'`, 
-                            [member_id, messId, start, end]),
-                pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='individual'`,
+                [member_id, messId, start, end]),
+            pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
                             FROM Expenses 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='shared'`, 
-                            [member_id, messId, start, end]),        
-            ]);
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='shared'`,
+                [member_id, messId, start, end]),
+        ]);
 
-            const {totalMeal, totalMealCost, mealRate} = await findValue(messId, start, end);
+        const { totalMeal, totalMealCost, mealRate } = await findValue(messId, start, end);
 
-            const meal = parseFloat(tMeal.rows[0].total);
-            const deposit = parseFloat(tDeposit.rows[0].total);
-            const indivOther = parseFloat(tIndiv.rows[0].total);
-            const sharedOther = parseFloat(tShared.rows[0].total);
-            const mealCost = meal > 0 ? meal*mealRate : '0.00';
-            const totalCost = mealCost + indivOther + sharedOther;
-            const balance = deposit - totalCost;
-            res.json({
-                name: member.name,
-                totalMeal: meal,
-                mealCost,
-                sharedOtherCost: sharedOther,
-                individualOtherCost: indivOther,
-                totalCost,
-                deposit,
-                balance
-            });
+        const meal = parseFloat(tMeal.rows[0].total);
+        const deposit = parseFloat(tDeposit.rows[0].total);
+        const indivOther = parseFloat(tIndiv.rows[0].total);
+        const sharedOther = parseFloat(tShared.rows[0].total);
+        const mealCost = meal > 0 ? meal * mealRate : '0.00';
+        const totalCost = mealCost + indivOther + sharedOther;
+        const balance = deposit - totalCost;
+        res.json({
+            name: member.name,
+            totalMeal: meal,
+            mealCost,
+            sharedOtherCost: sharedOther,
+            individualOtherCost: indivOther,
+            totalCost,
+            deposit,
+            balance
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Failed to get personal summary' });

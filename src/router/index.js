@@ -5,6 +5,7 @@ const ExpenseRoute = require('../modules/expense/expense.route');
 const MealRoute = require('../modules/meal/meal.route');
 const MessRoute = require('../modules/mess/mess.route');
 const AddMemberRoute = require("../modules/MemberAdd/addmember.route")
+const getMessNameRoute = require("../modules/MemberAdd/getGroupName.route")
 
 const router = Router();
 
@@ -32,6 +33,10 @@ const moduleRoutes = [
     {
         path: "/mess",
         route: AddMemberRoute
+    },
+    {
+        path: "/mess",
+        route: getMessNameRoute
     },
 ];
 
