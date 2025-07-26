@@ -80,13 +80,26 @@ const logInUser = async (res, payload) => {
     }
     // get member by user id 
     const memberResult = await pool.query('SELECT * FROM members WHERE user_id = $1', [user.id]);
+    const query = `
+            SELECT 
+    MM.mess_id,
+    M.role
+FROM Members M
+JOIN MemberMess MM ON M.member_id = MM.member_id
+WHERE M.user_id = $1
+ORDER BY MM.joined_at DESC
+LIMIT 1;
+        `;
+    const result2 = await pool.query(query, [user.id]);
+    const membersMessIdRole = result2.rows[0];
+
     // generate token adn setTokenCookie 
     const token = generateToken(user, rememberMe);
     setTokenCookie(res, token, rememberMe);
     // password  remove
     const { password: _, ...rest } = result.rows[0];
     // merge member and user object 
-    const userResult = { ...rest, ...memberResult.rows[0] };
+    const userResult = { ...rest, ...memberResult.rows[0], ...result2.rows[0] };
     // user and accessToken
     return {
         user: userResult,
