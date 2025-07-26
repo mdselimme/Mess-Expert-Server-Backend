@@ -11,6 +11,8 @@ const envVars = require("../../config/env");
 const createAnUser = async (payload) => {
     const { fullName, username, email, password } = payload;
 
+    console.log(payload)
+
     if (!username || !email || !password || !fullName) {
         throw new AppError(StatusCodes.BAD_REQUEST, "All fields are required.");
     }
@@ -35,23 +37,21 @@ const createAnUser = async (payload) => {
 
     // Create user
     const userResult = await pool.query(
-        'INSERT INTO users (fullName, username, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
+        'INSERT INTO users (fullname, username, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
         [fullName, username, email, hashedPassword]
     );
 
     const user = userResult.rows[0];
 
+
     // Create member record
     await pool.query(
-        `INSERT INTO members (name, email, phone_number, image, joining_date, user_id)
-   VALUES ($1, $2, $3, $4, CURRENT_DATE, $5)`,
-        [username, email, "01700000000", "https://i.ibb.co/M5C3p0pd/user-image.png", user.id]
+        `INSERT INTO members (name, phone_number, image, joining_date, user_id)
+     VALUES ($1, $2, $3, CURRENT_DATE, $4)`,
+        [fullName, "01700000000", "https://i.ibb.co/M5C3p0pd/user-image.png", user.id]
     );
 
-
-
     await pool.query('COMMIT');
-
 
 };
 
