@@ -184,6 +184,76 @@ http://localhost:5000/api/v1/
 ```
 - **Auth Required:** Yes (JWT cookie)
 
+#### **Mess Summary**
+- **GET** `/mess/:messId/summary?month=YYYY-MM`
+- **Description:** Get mess-level summary for a given month (authenticated).
+- **Query Parameters:**
+  - `month` (required, format: `YYYY-MM`)
+- **Response Example:**
+```json
+{
+  "messBalance": "1792.85",
+  "totalDeposit": 14088.85,
+  "messTotalMeal": 201,
+  "messTotalMealCost": 12296.00,
+  "messMealRate": 61.17,
+  "totalIndividualOtherCost": 0.00,
+  "totalSharedOtherCost": 0.00
+}
+```
+- **Auth Required:** Yes (JWT cookie)
+
+#### **All Member Summary**
+- **GET** `/mess/:messId/members/summary?month=YYYY-MM`
+- **Description:** Get summary for all members in a mess for a given month (authenticated).
+- **Query Parameters:**
+  - `month` (required, format: `YYYY-MM`)
+- **Response Example:**
+```json
+{
+  "members": [
+    {
+      "name": "Dip",
+      "totalMeal": 27,
+      "mealCost": 1651.70,
+      "sharedOtherCost": 0.00,
+      "individualOtherCost": 0.00,
+      "totalCost": 1651.70,
+      "deposit": 2038.85,
+      "balance": 387.15
+    },
+    {
+      "name": "Neon",
+      "totalMeal": 4,
+      "mealCost": 244.70,
+      "sharedOtherCost": 0.00,
+      "individualOtherCost": 0.00,
+      "totalCost": 244.70,
+      "deposit": 577.00,
+      "balance": 332.30
+    }
+    // ... more members
+  ]
+}
+```
+- **Auth Required:** Yes (JWT cookie)
+
+#### **Personal Info Summary**
+- **GET** `/mess/:messId/member/me/summary?month=YYYY-MM`
+- **Description:** Get summary for the logged-in user in a mess for a given month (authenticated).
+- **Query Parameters:**
+  - `month` (required, format: `YYYY-MM`)
+- **Response Example:**
+```json
+{
+  "myMeal": 27,
+  "myDeposit": 2038.85,
+  "myCost": 1651.70,
+  "balance": 387.15
+}
+```
+- **Auth Required:** Yes (JWT cookie)
+
 ---
 
 ## Example cURL Requests
@@ -231,7 +301,7 @@ curl -X POST http://localhost:5000/api/v1/mess/create \
 3. Set up your `.env` file with database and JWT settings
 4. Start the server:
    ```
-   npm dun dev
+   npm run dev
    ```
 5. The API will be available at `http://localhost:5000/api/v1/`
 

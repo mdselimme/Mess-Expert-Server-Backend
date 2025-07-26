@@ -1,11 +1,7 @@
-const dotenv = require("dotenv");
-const path = require("path");
-
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
-
-const app = require("./app/app");
-const pool = require("./config/db");
-const envVars = require("./config/env");
+require("dotenv").config();
+const app = require("./src/app/app");
+const pool = require("./src/config/db");
+const envVars = require("./src/config/env");
 
 
 const PORT = envVars.PORT || 5000;

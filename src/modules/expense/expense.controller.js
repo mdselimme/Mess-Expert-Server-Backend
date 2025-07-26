@@ -6,7 +6,7 @@ const ExpensesAdd = async (req, res) => {
         const requesterId = req.user.id;
         //checking admin or not
 
-        const result1 = await db.query(
+        const result1 = await pool.query(
             "SELECT member_id, role FROM Members WHERE user_id = $1",
             [requesterId]
         );
@@ -67,7 +67,7 @@ const ExpensesAdd = async (req, res) => {
         const expensorId = result2.rows[0].id;
 
         //getting memberId and messId
-        const result3 = await db.query("SELECT member_id FROM Members WHERE user_id = $1", [expensorId]);
+        const result3 = await pool.query("SELECT member_id FROM Members WHERE user_id = $1", [expensorId]);
 
         if (result3.rows.length === 0) {
             return res.status(404).json({
@@ -79,7 +79,7 @@ const ExpensesAdd = async (req, res) => {
         const expensorMemberId = result3.rows[0].member_id;
 
         //getting mess id of the expensor
-        const result5 = await db.query("SELECT mess_id FROM MemberMess WHERE member_id = $1", [expensorMemberId]);
+        const result5 = await pool.query("SELECT mess_id FROM MemberMess WHERE member_id = $1", [expensorMemberId]);
 
         if (result5.rows.length === 0) {
             return res.status(404).json({
@@ -91,7 +91,7 @@ const ExpensesAdd = async (req, res) => {
         const expensorMessId = result5.rows[0].mess_id;
 
         //getting requester messId and validating this is the same mess
-        const result7 = await db.query("SELECT mess_id FROM MemberMess WHERE member_id = $1", [requesterMemberId]);
+        const result7 = await pool.query("SELECT mess_id FROM MemberMess WHERE member_id = $1", [requesterMemberId]);
 
         if (result7.rows.length === 0) {
             return res.status(404).json({
@@ -110,7 +110,7 @@ const ExpensesAdd = async (req, res) => {
         }
 
         //inserting all data
-        const result6 = await db.query(
+        const result6 = await pool.query(
             "INSERT INTO Expenses (mess_id, member_id, category, amount , date, description, is_settled) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
             [expensorMessId, expensorMemberId, category, amount, date, description, is_settled]
         );
