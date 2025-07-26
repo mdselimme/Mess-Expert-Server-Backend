@@ -33,6 +33,7 @@ CREATE TABLE Mess (
 CREATE TABLE MemberMess (
     member_id INT REFERENCES Members(member_id),
     mess_id INT REFERENCES Mess(mess_id),
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, --added to track latest mess of user - mahtab
     PRIMARY KEY(member_id, mess_id)
 );
 
