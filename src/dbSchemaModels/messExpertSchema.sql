@@ -12,7 +12,8 @@ CREATE TABLE public.users (
 CREATE TABLE Members (
     member_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    phone_number VARCHAR(20) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL DEFAULT 'my number',
     image TEXT,
     role VARCHAR(20) DEFAULT 'member',
     joining_date DATE NOT NULL,
@@ -33,6 +34,7 @@ CREATE TABLE Mess (
 CREATE TABLE MemberMess (
     member_id INT REFERENCES Members(member_id),
     mess_id INT REFERENCES Mess(mess_id),
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, --added to track latest mess of user - mahtab
     PRIMARY KEY(member_id, mess_id)
 );
 

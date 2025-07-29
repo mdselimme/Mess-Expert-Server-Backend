@@ -11,6 +11,7 @@ const userRegister = catchAsync(async (req, res, next) => {
 
     await AuthServices.createAnUser(req.body);
 
+
     // send response
     sendResponse(res, {
         statusCode: StatusCodes.OK,

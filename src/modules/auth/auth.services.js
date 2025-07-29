@@ -11,6 +11,7 @@ const envVars = require("../../config/env");
 const createAnUser = async (payload) => {
     const { fullName, username, email, password } = payload;
 
+
     if (!username || !email || !password || !fullName) {
         throw new AppError(StatusCodes.BAD_REQUEST, "All fields are required.");
     }
@@ -35,22 +36,21 @@ const createAnUser = async (payload) => {
 
     // Create user
     const userResult = await pool.query(
-        'INSERT INTO users (fullName, username, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
+        'INSERT INTO users (fullname, username, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
         [fullName, username, email, hashedPassword]
     );
 
     const user = userResult.rows[0];
 
+
     // Create member record
     await pool.query(
-        `INSERT INTO Members (name, phone_number,
-         image, joining_date, user_id)
-          VALUES ($1,'your phone number', $2, CURRENT_DATE, $3)`,
-        [username, 'https://i.ibb.co/M5C3p0pd/user-image.png', user.id]
+        `INSERT INTO members (name, phone_number, image, joining_date, user_id)
+     VALUES ($1, $2, $3, CURRENT_DATE, $4)`,
+        [fullName, "01700000000", "https://i.ibb.co/M5C3p0pd/user-image.png", user.id]
     );
 
     await pool.query('COMMIT');
-
 
 };
 
@@ -79,13 +79,26 @@ const logInUser = async (res, payload) => {
     }
     // get member by user id 
     const memberResult = await pool.query('SELECT * FROM members WHERE user_id = $1', [user.id]);
+    const query = `
+            SELECT 
+    MM.mess_id,
+    M.role
+FROM Members M
+JOIN MemberMess MM ON M.member_id = MM.member_id
+WHERE M.user_id = $1
+ORDER BY MM.joined_at DESC
+LIMIT 1;
+        `;
+    const result2 = await pool.query(query, [user.id]);
+    const membersMessIdRole = result2.rows[0];
+
     // generate token adn setTokenCookie 
     const token = generateToken(user, rememberMe);
     setTokenCookie(res, token, rememberMe);
     // password  remove
     const { password: _, ...rest } = result.rows[0];
     // merge member and user object 
-    const userResult = { ...rest, ...memberResult.rows[0] };
+    const userResult = { ...rest, ...memberResult.rows[0], ...result2.rows[0] };
     // user and accessToken
     return {
         user: userResult,
@@ -105,10 +118,26 @@ const getMyDataByToken = async (payload) => {
     const user = userFind.rows[0];
     // get member by user id 
     const memberResult = await pool.query('SELECT * FROM members WHERE user_id = $1', [user.id]);
+
+
+    if (memberResult.rows.length === 0) {
+        throw new AppError(StatusCodes.NOT_FOUND, 'No member record found for this user');
+    }
+    const member = memberResult.rows[0];
+
+    // get mess_ids from member mess
+    const messMemberships = await pool.query(
+        'SELECT mess_id FROM membermess WHERE member_id = $1',
+        [member.member_id]
+    );
+    // const messId = messMemberships.rows.map(row => row.mess_id) //multiple mess
+    const messId = messMemberships.rows.map(row => row.mess_id)[0] || null; // one mess
+
+
     // password  remove
     const { password: _, ...rest } = user;
     // merge member and user object 
-    const userResult = { ...rest, ...memberResult.rows[0] };
+    const userResult = { ...memberResult.rows[0], ...rest, mess_id: messId };
     return userResult;
 };
 
