@@ -12,6 +12,7 @@ CREATE TABLE public.users (
 CREATE TABLE Members (
     member_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL,
     phone_number VARCHAR(20) NOT NULL DEFAULT 'my number',
     image TEXT,
     role VARCHAR(20) DEFAULT 'member',

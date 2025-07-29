@@ -11,7 +11,6 @@ const envVars = require("../../config/env");
 const createAnUser = async (payload) => {
     const { fullName, username, email, password } = payload;
 
-    console.log(payload)
 
     if (!username || !email || !password || !fullName) {
         throw new AppError(StatusCodes.BAD_REQUEST, "All fields are required.");
@@ -133,12 +132,12 @@ const getMyDataByToken = async (payload) => {
     );
     // const messId = messMemberships.rows.map(row => row.mess_id) //multiple mess
     const messId = messMemberships.rows.map(row => row.mess_id)[0] || null; // one mess
-   
-    
+
+
     // password  remove
     const { password: _, ...rest } = user;
     // merge member and user object 
-    const userResult = {  ...memberResult.rows[0], ...rest, mess_id: messId };
+    const userResult = { ...memberResult.rows[0], ...rest, mess_id: messId };
     return userResult;
 };
 
