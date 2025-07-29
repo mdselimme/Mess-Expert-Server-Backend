@@ -12,7 +12,7 @@ const generateToken = (user, rememberMe) =>
 const setTokenCookie = (res, token, rememberMe) => {
     res.cookie('accessToken', token, {
         httpOnly: true,
-        secure: false,
+        secure: envVars.NODE_ENV === 'production',
         sameSite: envVars.NODE_ENV === 'production' ? 'none' : 'strict',
         maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
     });

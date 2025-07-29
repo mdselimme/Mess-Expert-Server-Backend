@@ -125,7 +125,7 @@ const getMyDataByToken = async (payload) => {
     }
     const member = memberResult.rows[0];
 
-    // get mess_ids from membermess
+    // get mess_ids from member mess
     const messMemberships = await pool.query(
         'SELECT mess_id FROM membermess WHERE member_id = $1',
         [member.member_id]
