@@ -119,10 +119,26 @@ const getMyDataByToken = async (payload) => {
     const user = userFind.rows[0];
     // get member by user id 
     const memberResult = await pool.query('SELECT * FROM members WHERE user_id = $1', [user.id]);
+
+
+    if (memberResult.rows.length === 0) {
+        throw new AppError(StatusCodes.NOT_FOUND, 'No member record found for this user');
+    }
+    const member = memberResult.rows[0];
+
+    // get mess_ids from membermess
+    const messMemberships = await pool.query(
+        'SELECT mess_id FROM membermess WHERE member_id = $1',
+        [member.member_id]
+    );
+    // const messId = messMemberships.rows.map(row => row.mess_id) //multiple mess
+    const messId = messMemberships.rows.map(row => row.mess_id)[0] || null; // one mess
+   
+    
     // password  remove
     const { password: _, ...rest } = user;
     // merge member and user object 
-    const userResult = { ...rest, ...memberResult.rows[0] };
+    const userResult = {  ...memberResult.rows[0], ...rest, mess_id: messId };
     return userResult;
 };
 
