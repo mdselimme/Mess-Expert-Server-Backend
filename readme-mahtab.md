@@ -122,6 +122,58 @@ All endpoints require a valid JWT token in the request headers:
 | 500  | Internal Server Error                              |
 
 ---
+# This two API will be available at `http://localhost:5000/api/v1/record`
+
+
+
+
+## 🔹 GET `/:messId/mess-name`
+
+- **Description**: Get messName using messId of a user if user has joined a mess earlier.
+
+- **Authentication Required**: Yes
+
+### Request Headers
+
+| Key            | Value                    | Required |
+|----------------|--------------------------|----------|
+| Authorization  | Bearer `<JWT token>`     | yes      |
+| Content-Type   | application/json         | yes      |
+
+###  Request Body
+
+```
+No body
+
+```
+
+###  Success Response
+
+- **Code**: `200`
+
+```json
+{
+  "success": true,
+  "message": "Successfully fetched mess name",
+  "data": {
+    "messId": 45,
+    "messName": "ABC"
+  }
+}
+```
+
+###  Error Responses
+
+| Code | Message                                             |
+|------|---------------------------------------------------- |
+| 403  | Not admin / Requester and expensor not in same mess |
+| 404  | Mess not found                                      |
+| 500  | Internal Server Error                               |
+
+---
+# The API's will be available at `http://localhost:5000/api/v1/mess`
+
+
 
 ## How to Run Locally
 
@@ -135,7 +187,6 @@ All endpoints require a valid JWT token in the request headers:
    ```
    npm dun dev
    ```
-5. The API will be available at `http://localhost:5000/api/v1/record`
 
 
 ##  Notes
