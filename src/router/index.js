@@ -8,7 +8,8 @@ const AddMemberRoute = require("../modules/MemberAdd/addmember.route")
 const getMessNameRoute = require("../modules/MemberAdd/getGroupName.route")
 const CheckAdminOfMessRoute = require("../checking/userIsAdmin.route");
 const GetMessIdRoleRoute = require("../getUsersRoleAndMessId/getMessIdRole.route")
-
+const MarketScheduleRoute = require("../modules/market/market_schedule.route");
+const PersonalDepositRoute = require("../modules/personal deposit/personalDeposit.route");
 
 const router = Router();
 
@@ -49,6 +50,14 @@ const moduleRoutes = [
         path: "/mess",
         route: GetMessIdRoleRoute
     },
+    {
+        path: "/mess",
+        route: MarketScheduleRoute
+    },
+    {
+        path: "/personal",
+        route: PersonalDepositRoute
+    }
 
 ];
 
