@@ -67,6 +67,10 @@ All endpoints require a valid JWT token in the request headers:
 ---
 
 
+
+
+
+
 ## 🔹 POST `/expenses`
 
 - **Description**: Record an expense for a user. Only `admin` can add expenses, and requester must be in the same mess as the expensor.
@@ -122,6 +126,180 @@ All endpoints require a valid JWT token in the request headers:
 | 500  | Internal Server Error                              |
 
 ---
+# This two API will be available at `http://localhost:5000/api/v1/record`
+
+
+
+
+
+
+
+## 🔹 GET `/:messId/mess-name`  -- probably the function of this apni can be done by get-me endpoint .
+
+- **Description**: Get messName using messId of a user if user has joined a mess earlier.
+
+- **Authentication Required**: Yes
+
+### Request Headers
+
+| Key            | Value                    | Required |
+|----------------|--------------------------|----------|
+| Authorization  | Bearer `<JWT token>`     | yes      |
+| Content-Type   | application/json         | yes      |
+
+###  Request Body
+
+```
+No body
+
+```
+
+###  Success Response
+
+- **Code**: `200`
+
+```json
+{
+  "success": true,
+  "message": "Successfully fetched mess name",
+  "data": {
+    "messId": 45,
+    "messName": "ABC"
+  }
+}
+```
+
+###  Error Responses
+
+| Code | Message                                             |
+|------|---------------------------------------------------- |
+| 403  | Not admin / Requester and expensor not in same mess |
+| 404  | Mess not found                                      |
+| 500  | Internal Server Error                               |
+
+---
+# The API's will be available at `http://localhost:5000/api/v1/mess`
+
+
+
+
+
+
+
+## 🔹 POST `/:messId/:userRole`
+
+- **Description**: Saving market history of each member who did that purchase for mess.
+
+- **Authentication Required**: Yes. Only `admin` can add market history, and requester must be in the same mess as the user who did the market.
+
+### Request Headers
+
+| Key            | Value                    | Required |
+|----------------|--------------------------|----------|
+| Authorization  | Bearer `<JWT token>`     | yes      |
+| Content-Type   | application/json         | yes      |
+
+###  Request Body
+
+```json
+{
+  "userName":"a"
+}
+
+```
+
+###  Success Response
+
+- **Code**: `201` 
+
+```json
+{
+    "success": true,
+    "message": "Market schedule created successfully",
+    "data": {
+        "market_id": 2,
+        "mess_id": 1,
+        "user_id": 3,
+        "market_date": "2025-07-31T18:00:00.000Z"
+    }
+}
+
+```
+
+###  Error Responses
+
+| Code | Message                                             |
+|------|---------------------------------------------------- |
+| 400  | Mess ID and user role are required / User name is required |
+| 403  | You do not have permission to access this resource |
+| 404  | User not found                                      |
+| 500  | Internal Server Error / Failed to create market schedule  |
+
+---
+# The API's will be available at `http://localhost:5000/api/v1/mess`
+
+
+
+
+
+
+## 🔹 POST `/deposit`
+
+- **Description**: Saving personal deposit of user .
+
+- **Authentication Required**: Yes.
+
+### Request Headers
+
+| Key            | Value                    | Required |
+|----------------|--------------------------|----------|
+| Authorization  | Bearer `<JWT token>`     | yes      |
+| Content-Type   | application/json         | yes      |
+
+###  Request Body
+
+```json
+{
+    "personal_depo_description":"Nothing",
+    "personal_depo_amount":1000
+}
+
+```
+
+###  Success Response
+
+- **Code**: `201` 
+
+```json
+{
+    "success": true,
+    "message": "Personal deposit added successfully",
+    "data": {
+        "deposit_id": 2,
+        "user_id": 2,
+        "amount": "1000.00",
+        "description": "Nothing",
+        "deposit_date": "2025-07-31T18:00:00.000Z"
+    }
+}
+
+```
+
+###  Error Responses
+
+| Code | Message                                             |
+|------|---------------------------------------------------- |
+| 400  | Description and amount are required |
+| 403  |  |
+| 404  |                                       |
+| 500  | Internal Server Error  |
+
+---
+# The API's will be available at `http://localhost:5000/api/v1/personal`
+
+
+
+
 
 ## How to Run Locally
 
@@ -135,7 +313,6 @@ All endpoints require a valid JWT token in the request headers:
    ```
    npm dun dev
    ```
-5. The API will be available at `http://localhost:5000/api/v1/record`
 
 
 ##  Notes

@@ -12,7 +12,7 @@ CREATE TABLE public.users (
 CREATE TABLE Members (
     member_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    email VARCHAR(150) NOT NULL,
+    -- email VARCHAR(150) NOT NULL, -- Uncomment if email is needed - mahtab
     phone_number VARCHAR(20) NOT NULL DEFAULT 'my number',
     image TEXT,
     role VARCHAR(20) DEFAULT 'member',
@@ -115,4 +115,26 @@ CREATE TABLE MonthlyReports (
     total_meals NUMERIC(10, 2),
     total_expense NUMERIC(10, 2),
     generated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- newly added tables - mahtab
+
+-- Market Schedule Table
+CREATE TABLE market_schedule (
+  market_id SERIAL PRIMARY KEY,
+  mess_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  market_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  FOREIGN KEY (mess_id) REFERENCES mess(mess_id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- personal depposit table
+CREATE TABLE personal_deposits (
+  deposit_id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  amount NUMERIC(10, 2) NOT NULL,
+  description TEXT,
+  deposit_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );

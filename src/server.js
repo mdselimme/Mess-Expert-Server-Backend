@@ -1,3 +1,7 @@
+const dotenv = require("dotenv");
+const path = require("path");
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
 const app = require("./app/app");
 const pool = require("./config/db");
 const envVars = require("./config/env");
