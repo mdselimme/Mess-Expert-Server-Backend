@@ -52,7 +52,7 @@ const moduleRoutes = [
         route: GetMessIdRoleRoute
     },
     {
-        path: "/mess",
+        path: "/mess-market",
         route: MarketScheduleRoute
     },
     {

@@ -236,14 +236,14 @@ No body
 | 500  | Internal Server Error / Failed to create market schedule  |
 
 ---
-# The API's will be available at `http://localhost:5000/api/v1/mess`
+# The API's will be available at `http://localhost:5000/api/v1/mess-market`
 
 
 
 
 
 
-## 🔹 POST `/deposit`
+## 🔹 POST `/deposit`  PERSONAL DEPOSIT API
 
 - **Description**: Saving personal deposit of user .
 
@@ -298,6 +298,63 @@ No body
 # The API's will be available at `http://localhost:5000/api/v1/personal`
 
 
+
+
+
+
+## 🔹 POST `/expense`  PERSONAL EXPENSE API
+
+- **Description**: Saving personal expense of user .
+
+- **Authentication Required**: Yes.
+
+### Request Headers
+
+| Key            | Value                    | Required |
+|----------------|--------------------------|----------|
+| Authorization  | Bearer `<JWT token>`     | yes      |
+| Content-Type   | application/json         | yes      |
+
+###  Request Body
+
+```json
+{
+    "personal_expense_description":"Nothing",
+    "personal_expense_amount":1000
+}
+
+```
+
+###  Success Response
+
+- **Code**: `201` 
+
+```json
+{
+    "success": true,
+    "message": "Personal expense added successfully",
+    "data": {
+        "expense_id": 1,
+        "user_id": 2,
+        "amount": "1000.00",
+        "description": "nothing",
+        "expense_date": "2025-07-31T18:00:00.000Z"
+    }
+}
+
+```
+
+###  Error Responses
+
+| Code | Message                                             |
+|------|---------------------------------------------------- |
+| 400  | Description and amount are required |
+| 403  |  |
+| 404  |                                       |
+| 500  | Internal Server Error  |
+
+---
+# The API's will be available at `http://localhost:5000/api/v1/personal`
 
 
 
