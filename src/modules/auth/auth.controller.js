@@ -53,6 +53,22 @@ const userLogOut = catchAsync(async (req, res, next) => {
     })
 });
 
+//Reset User Password
+const userPasswordReset = catchAsync(async (req, res, next) => {
+
+    const decodedToken = req.user;
+
+    await AuthServices.userPasswordResetService(req.body, decodedToken);
+
+    // send response
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "User Password Reset Successfully.",
+        data: null,
+    })
+});
+
 // Middleware
 const verifyToken = (req, res, next) => {
     const token = req.cookies.token;
@@ -89,6 +105,13 @@ const checkAuth = [
     },
 ];
 
-const AuthController = { userLogOut, userRegister, checkAuth, logInUser, getMyDataByToken };
+const AuthController = {
+    userLogOut,
+    userRegister,
+    checkAuth,
+    logInUser,
+    getMyDataByToken,
+    userPasswordReset
+};
 
 module.exports = AuthController;
