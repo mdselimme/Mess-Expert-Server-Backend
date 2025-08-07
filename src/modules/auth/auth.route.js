@@ -20,7 +20,9 @@ router.patch("/reset-password",
 //Auth Check user
 router.get('/check', AuthController.checkAuth);
 //My User find
-router.get('/get-me', authenticateToken, AuthController.getMyDataByToken);
+router.get('/get-me',
+    authenticateToken,
+    AuthController.getMyDataByToken);
 
 
 const AuthRouter = router;

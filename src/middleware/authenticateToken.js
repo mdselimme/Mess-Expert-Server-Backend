@@ -8,7 +8,7 @@ const catchAsync = require('../utils/catchAsync');
 // MiddleWare for verify Jwt 
 const authenticateToken = catchAsync(async (req, res, next) => {
 
-    const token = req.headers.authorization;
+    const token = req.cookies?.accessToken;
 
     if (!token) {
         throw new AppError(StatusCodes.FORBIDDEN, "User Not Authenticated. Token is missing.")
