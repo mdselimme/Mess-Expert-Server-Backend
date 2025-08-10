@@ -138,3 +138,15 @@ CREATE TABLE personal_deposits (
   deposit_date DATE NOT NULL DEFAULT CURRENT_DATE,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+
+
+-- personal expenses table
+CREATE TABLE personal_expenses (
+  expense_id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  amount NUMERIC(10, 2) NOT NULL,
+  description TEXT,
+  expense_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
