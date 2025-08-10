@@ -88,7 +88,7 @@ const logInUser = async (res, payload) => {
             WHERE M.user_id = $1
             ORDER BY MM.joined_at DESC LIMIT 1;
         `;
-    console.log(memberResult.rows[0])
+
     const result2 = await pool.query(query, [user.id]);
     const membersMessIdRole = result2.rows[0];
 
@@ -97,10 +97,8 @@ const logInUser = async (res, payload) => {
     setTokenCookie(res, token, rememberMe);
     // password  remove
     const { password: _, ...rest } = result.rows[0];
-    console.log(rest)
     // merge member and user object 
     const userResult = { ...rest, ...memberResult.rows[0], ...membersMessIdRole };
-    console.log(userResult)
     // user and accessToken
     return {
         user: userResult,

@@ -4,7 +4,8 @@ const envVars = require("../config/env");
 
 // Token generator
 const generateToken = (user, rememberMe) =>
-    jwt.sign({ id: user.id, username: user.username, email: user.email }, envVars.JWT_SECRET, {
+    jwt.sign({ id: user.id, username: user.username, email: user.email },
+        envVars.JWT_SECRET, {
         expiresIn: rememberMe ? '7d' : '1d', // Duration for rememberMe
     });
 
