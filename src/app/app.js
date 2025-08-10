@@ -6,10 +6,8 @@ app.use(express.json()); //req.body
 app.use(cookieParser());
 //middleware
 app.use(cors({
-    origin: ["https://mess-expert-cline-site.vercel.app", "http://localhost:5173", "https://mess-expert-server-backend.onrender.com"],
+    origin: ["https://mess-expert-cline-site.vercel.app", "http://localhost:5173", "https://messexpert.netlify.app/"],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 const globalErrorHandler = require('../middleware/globalErrorHandler');
 const notFoundRoute = require('../middleware/notFound');
