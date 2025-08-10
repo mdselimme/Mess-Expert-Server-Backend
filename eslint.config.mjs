@@ -1,21 +1,14 @@
-import globals from "globals";
-import { defineConfig } from "eslint/config";
+import globals from 'globals';
+import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
   {
-    files: ["**/*.js"],
+    files: ['**/*.js'],
     languageOptions: {
-      sourceType: "commonjs",
+      sourceType: 'commonjs',
       globals: {
-        ...globals.node,
-        ...globals.browser,
+        ...globals.node,   // ✅ Enables `require`, `__dirname`, etc.
       },
-    },
-    extends: ["eslint:recommended"], // Add this line
-    rules: {
-      "no-unused-vars": "warn",
-      "semi": ["error", "always"],
-      "quotes": ["error", "single"],
     },
   },
 ]);

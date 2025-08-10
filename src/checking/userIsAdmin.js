@@ -19,7 +19,6 @@ const checkUserAdminOfCureentMess = async (req, res) => {
     const values = [userId, messId];
 
     const { rows } = await pool.query(query, values);
-    console.log(rows[0].role);
 
     if (rows.length > 0) {
 

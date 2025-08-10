@@ -1,9 +1,11 @@
 # Mess Expert Backend API Documentation - Dip
 
 ## Overview
+
 This backend provides RESTful APIs for mess management, including user authentication, meal tracking, and mess administration. It uses Express.js, JWT authentication (via HTTP-only cookies), and PostgreSQL.
 
 **Base URL:**
+
 ```
 http://localhost:5000/api/v1/
 ```
@@ -11,6 +13,7 @@ http://localhost:5000/api/v1/
 ---
 
 ## Authentication
+
 - JWT tokens are issued on login and stored in HTTP-only cookies.
 - Protected routes require a valid token in cookies.
 - Middleware: `authenticateToken` verifies the token and attaches the user to `req.user`.
@@ -22,9 +25,11 @@ http://localhost:5000/api/v1/
 ### Auth Routes (`/auth`)
 
 #### **Register**
+
 - **POST** `/auth/register`
 - **Description:** Register a new user.
 - **Request Body:**
+
 ```json
 {
   "fullName": "Shah Jalal Dip",
@@ -34,7 +39,9 @@ http://localhost:5000/api/v1/
   "rememberMe": true
 }
 ```
+
 - **Response Example:**
+
 ```json
 {
   "success": true,
@@ -48,9 +55,11 @@ http://localhost:5000/api/v1/
 ```
 
 #### **Login**
+
 - **POST** `/auth/login`
 - **Description:** Login and receive JWT cookie.
 - **Request Body:**
+
 ```json
 {
   "email": "dip@gmail.com",
@@ -58,7 +67,9 @@ http://localhost:5000/api/v1/
   "rememberMe": true
 }
 ```
+
 - **Response Example:**
+
 ```json
 {
   "success": true,
@@ -73,9 +84,11 @@ http://localhost:5000/api/v1/
 ```
 
 #### **Logout**
+
 - **POST** `/auth/logout`
 - **Description:** Logout (clears JWT cookie).
 - **Response Example:**
+
 ```json
 {
   "success": true,
@@ -84,9 +97,82 @@ http://localhost:5000/api/v1/
 ```
 
 #### **Check Auth**
+
 - **GET** `/auth/check`
 - **Description:** Check authentication status (requires valid token).
 - **Response Example:**
+
+```json
+{
+  "id": 1,
+  "username": "dip"
+}
+```
+
+#### **Password Reset**
+
+- **PATCH** `/auth/reset-password`
+- **credentials** true
+
+- **Request Body Example:**
+
+```json
+{
+    "oldPassword": "Ss@123456",
+    "newPassword": "Se@123456"
+}
+```
+
+- **Response:**
+
+```json
+{
+    "statusCode": 200,
+    "success": true,
+    "message": "User Password Reset Successfully.",
+    "data": null
+}
+```
+
+***Update User Data***
+_**PATCH** `/auth/update-userDat`
+-**credentials** true
+
+-**Request Body Example:**
+
+```json
+{
+    "fullName": "Shah Jalal",
+    "username": "dip",
+    "phone_number": "01627647267"
+}
+```
+Response:
+
+```json
+{
+    "statusCode": 200,
+    "success": true,
+    "message": "User Data Updated Successfully.",
+    "data": {
+        "id": 1,
+        "fullname": "Shah Jalal",
+        "username": "dip",
+        "email": "user@example.com",
+        "phone_number": "01627647267",
+        "image": null,
+        "role": "member",
+        "joining_date": "2025-08-10"
+    }
+}
+```
+
+#### **Check Auth**
+
+- **GET** `/auth/check`
+- **Description:** Check authentication status (requires valid token).
+- **Response Example:**
+
 ```json
 {
   "id": 1,
@@ -99,9 +185,11 @@ http://localhost:5000/api/v1/
 ### Meal Routes (`/meals`)
 
 #### **Add Meal**
+
 - **POST** `/meals/`
 - **Description:** Add a meal record.
 - **Request Body:**
+
 ```json
 {
   "member_id": 1,
@@ -110,7 +198,9 @@ http://localhost:5000/api/v1/
   "meal_type": "lunch"
 }
 ```
+
 - **Response Example:**
+
 ```json
 {
   "message": "Meal added successfully"
@@ -118,13 +208,17 @@ http://localhost:5000/api/v1/
 ```
 
 #### **Get Meals**
+
 - **GET** `/meals/`
 - **Description:** Get meals (optionally filter by `mess_id`, `member_id`, `date`).
 - **Query Example:**
+
 ```
 /meals?mess_id=1&date=2024-06-01
 ```
+
 - **Response Example:**
+
 ```json
 [
   {
@@ -142,16 +236,20 @@ http://localhost:5000/api/v1/
 ### Mess Routes (`/mess`)
 
 #### **Create Mess**
+
 - **POST** `/mess/create`
 - **Description:** Create a new mess (authenticated, admin only).
 - **Request Body:**
+
 ```json
 {
   "name": "Green Mess",
   "location": "Campus Block A"
 }
 ```
+
 - **Response Example:**
+
 ```json
 {
   "message": "Mess created successfully",
@@ -159,18 +257,23 @@ http://localhost:5000/api/v1/
   "adminId": 1
 }
 ```
+
 - **Auth Required:** Yes (JWT cookie)
 
 #### **Add Member to Mess**
+
 - **POST** `/mess/:messId/add-member`
 - **Description:** Add a member to a mess (authenticated, admin only).
 - **Request Body:**
+
 ```json
 {
   "email": "newuser@example.com"
 }
 ```
+
 - **Response Example:**
+
 ```json
 {
   "message": "Member added successfully",
@@ -182,14 +285,17 @@ http://localhost:5000/api/v1/
   }
 }
 ```
+
 - **Auth Required:** Yes (JWT cookie)
 
 #### **Mess Summary**
+
 - **GET** `/mess/:messId/summary?month=YYYY-MM`
 - **Description:** Get mess-level summary for a given month (authenticated).
 - **Query Parameters:**
   - `month` (required, format: `YYYY-MM`)
 - **Response Example:**
+
 ```json
 {
   "messBalance": "1792.85",
@@ -201,14 +307,17 @@ http://localhost:5000/api/v1/
   "totalSharedOtherCost": 0.00
 }
 ```
+
 - **Auth Required:** Yes (JWT cookie)
 
 #### **All Member Summary**
+
 - **GET** `/mess/:messId/members/summary?month=YYYY-MM`
 - **Description:** Get summary for all members in a mess for a given month (authenticated).
 - **Query Parameters:**
   - `month` (required, format: `YYYY-MM`)
 - **Response Example:**
+
 ```json
 {
   "members": [
@@ -236,14 +345,17 @@ http://localhost:5000/api/v1/
   ]
 }
 ```
+
 - **Auth Required:** Yes (JWT cookie)
 
 #### **Personal Info Summary**
+
 - **GET** `/mess/:messId/member/me/summary?month=YYYY-MM`
 - **Description:** Get summary for the logged-in user in a mess for a given month (authenticated).
 - **Query Parameters:**
   - `month` (required, format: `YYYY-MM`)
 - **Response Example:**
+
 ```json
 {
   "myMeal": 27,
@@ -252,6 +364,7 @@ http://localhost:5000/api/v1/
   "balance": 387.15
 }
 ```
+
 - **Auth Required:** Yes (JWT cookie)
 
 ---
@@ -259,6 +372,7 @@ http://localhost:5000/api/v1/
 ## Example cURL Requests
 
 ### Register
+
 ```
 curl -X POST http://localhost:5000/api/v1/auth/register \
   -H "Content-Type: application/json" \
@@ -266,6 +380,7 @@ curl -X POST http://localhost:5000/api/v1/auth/register \
 ```
 
 ### Login
+
 ```
 curl -X POST http://localhost:5000/api/v1/auth/login \
   -H "Content-Type: application/json" \
@@ -274,6 +389,7 @@ curl -X POST http://localhost:5000/api/v1/auth/login \
 ```
 
 ### Add Meal (after login)
+
 ```
 curl -X POST http://localhost:5000/api/v1/meals/ \
   -H "Content-Type: application/json" \
@@ -282,6 +398,7 @@ curl -X POST http://localhost:5000/api/v1/meals/ \
 ```
 
 ### Create Mess (after login)
+
 ```
 curl -X POST http://localhost:5000/api/v1/mess/create \
   -H "Content-Type: application/json" \
@@ -308,5 +425,6 @@ curl -X POST http://localhost:5000/api/v1/mess/create \
 ---
 
 ## Notes
+
 - All protected routes require a valid JWT token in cookies (login first).
 - Example data is used in this documentation; adapt as needed for your real data and environment.

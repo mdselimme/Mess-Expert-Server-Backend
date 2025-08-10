@@ -38,7 +38,7 @@ const MemberAdd = async (req, res) => {
 
         const admin_id = requesterMemberId;
 
-        console.log("admin_id being used to find mess:", admin_id);
+
 
 
         // checked requester is a admin

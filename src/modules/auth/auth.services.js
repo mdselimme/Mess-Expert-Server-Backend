@@ -81,14 +81,14 @@ const logInUser = async (res, payload) => {
     const memberResult = await pool.query('SELECT * FROM members WHERE user_id = $1', [user.id]);
     const query = `
             SELECT 
-    MM.mess_id,
-    M.role
-FROM Members M
-JOIN MemberMess MM ON M.member_id = MM.member_id
-WHERE M.user_id = $1
-ORDER BY MM.joined_at DESC
-LIMIT 1;
+            MM.mess_id,
+            M.role
+            FROM Members M
+            JOIN MemberMess MM ON M.member_id = MM.member_id
+            WHERE M.user_id = $1
+            ORDER BY MM.joined_at DESC LIMIT 1;
         `;
+
     const result2 = await pool.query(query, [user.id]);
     const membersMessIdRole = result2.rows[0];
 
@@ -98,7 +98,7 @@ LIMIT 1;
     // password  remove
     const { password: _, ...rest } = result.rows[0];
     // merge member and user object 
-    const userResult = { ...rest, ...memberResult.rows[0], ...result2.rows[0] };
+    const userResult = { ...rest, ...memberResult.rows[0], ...membersMessIdRole };
     // user and accessToken
     return {
         user: userResult,
@@ -132,8 +132,6 @@ const getMyDataByToken = async (payload) => {
     );
     // const messId = messMemberships.rows.map(row => row.mess_id) //multiple mess
     const messId = messMemberships.rows.map(row => row.mess_id)[0] || null; // one mess
-
-
     // password  remove
     const { password: _, ...rest } = user;
     // merge member and user object 
@@ -141,5 +139,71 @@ const getMyDataByToken = async (payload) => {
     return userResult;
 };
 
-const AuthServices = { logInUser, createAnUser, getMyDataByToken }
+// User password reset 
+const userPasswordResetService = async (payload, decodedToken) => {
+    // data find form body 
+    const { oldPassword, newPassword } = payload;
+    //user find from db
+    const userFind = await pool.query('SELECT * FROM users WHERE id = $1', [decodedToken.id]);
+    // if user not exit 
+    if (!userFind.rows[0]) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid User Id')
+    }
+    const user = userFind.rows[0];
+    // old and user password compare 
+    const passwordCheck = await bcrypt.compare(oldPassword, user.password);
+    // if password not match 
+    if (!passwordCheck) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid Old Password.')
+    }
+    // if old password and new password same 
+    if (oldPassword === newPassword) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'Old Password and New Password is same. Try with a new password.')
+    }
+    // new password hash 
+    const newHashPassword = await bcrypt.hash(newPassword, Number(envVars.BCRYPT_SALT_ROUND));
+    // password reset result 
+    const result = await pool.query('UPDATE users SET password = $1 WHERE email = $2', [newHashPassword, decodedToken.email]);
+    // return result 
+    return result.rows[0];
+};
+
+// User data update 
+const userDataUpdateService = async (payload, decodedToken) => {
+    const { fullName, username, phone_number } = payload;
+
+    const userFind = await pool.query('SELECT * FROM users WHERE id = $1', [decodedToken.id]);
+
+    if (!userFind.rows[0]) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid User Id');
+    }
+
+    const updatedUser = await pool.query(
+        'UPDATE users SET fullname = $1, username = $2 WHERE id = $3 RETURNING *',
+        [fullName, username, decodedToken.id]
+    );
+
+    await pool.query(
+        'UPDATE Members SET phone_number = $1 WHERE user_id = $2',
+        [phone_number, decodedToken.id]
+    );
+
+    const updatedProfile = await pool.query(`
+        SELECT u.id, u.fullname, u.username, u.email, m.phone_number, m.image, m.role, m.joining_date
+        FROM users u
+        LEFT JOIN Members m ON u.id = m.user_id
+        WHERE u.id = $1
+    `, [decodedToken.id]);
+
+    return updatedProfile.rows[0];
+};
+
+
+const AuthServices = {
+    logInUser,
+    createAnUser,
+    getMyDataByToken,
+    userPasswordResetService,
+    userDataUpdateService
+}
 module.exports = AuthServices;
