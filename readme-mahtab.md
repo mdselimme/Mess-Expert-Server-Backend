@@ -130,10 +130,6 @@ All endpoints require a valid JWT token in the request headers:
 
 
 
-
-
-
-
 ## 🔹 GET `/:messId/mess-name`  -- probably the function of this apni can be done by get-me endpoint .
 
 - **Description**: Get messName using messId of a user if user has joined a mess earlier.
@@ -179,11 +175,6 @@ No body
 
 ---
 # The API's will be available at `http://localhost:5000/api/v1/mess`
-
-
-
-
-
 
 
 ## 🔹 POST `/:messId/:userRole`
@@ -237,10 +228,6 @@ No body
 
 ---
 # The API's will be available at `http://localhost:5000/api/v1/mess-market`
-
-
-
-
 
 
 ## 🔹 POST `/deposit`  PERSONAL DEPOSIT API
@@ -299,9 +286,6 @@ No body
 
 
 
-
-
-
 ## 🔹 POST `/expense`  PERSONAL EXPENSE API
 
 - **Description**: Saving personal expense of user .
@@ -355,7 +339,6 @@ No body
 
 ---
 # The API's will be available at `http://localhost:5000/api/v1/personal`
-
 
 
 ## How to Run Locally
