@@ -69,6 +69,22 @@ const userPasswordReset = catchAsync(async (req, res, next) => {
     })
 });
 
+//Update User Data
+const userDataUpdate = catchAsync(async (req, res, next) => {
+
+    const decodedToken = req.user;
+
+    await AuthServices.userDataUpdateService(req.body, decodedToken);
+
+    // send response
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "User Data Update Successfully.",
+        data: null,
+    })
+});
+
 // Middleware
 const verifyToken = (req, res, next) => {
     const token = req.cookies.token;
@@ -111,7 +127,8 @@ const AuthController = {
     checkAuth,
     logInUser,
     getMyDataByToken,
-    userPasswordReset
+    userPasswordReset,
+    userDataUpdate
 };
 
 module.exports = AuthController;

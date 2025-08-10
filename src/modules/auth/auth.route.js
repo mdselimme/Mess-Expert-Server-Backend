@@ -17,6 +17,11 @@ router.patch("/reset-password",
     authenticateToken,
     AuthController.userPasswordReset);
 
+//Update User Data
+router.patch("/update-userData",
+    authenticateToken,
+    AuthController.userDataUpdate);
+
 //Auth Check user
 router.get('/check', AuthController.checkAuth);
 //My User find
