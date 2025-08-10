@@ -38,13 +38,23 @@ CREATE TABLE MemberMess (
     PRIMARY KEY(member_id, mess_id)
 );
 
--- Meals Table
+-- -- Meals Table
+-- CREATE TABLE Meals (
+--     meal_id SERIAL PRIMARY KEY,
+--     member_id INT REFERENCES Members(member_id),
+--     mess_id INT REFERENCES Mess(mess_id),
+--     date DATE NOT NULL,
+--     meal_type VARCHAR(20)  -- breakfast, lunch, dinner
+-- );
+
+-- Meals Table (Updated)
 CREATE TABLE Meals (
     meal_id SERIAL PRIMARY KEY,
-    member_id INT REFERENCES Members(member_id),
-    mess_id INT REFERENCES Mess(mess_id),
+    member_id INT REFERENCES Members(member_id) ON DELETE CASCADE,
+    mess_id INT REFERENCES Mess(mess_id) ON DELETE CASCADE,
     date DATE NOT NULL,
-    meal_type VARCHAR(20)  -- breakfast, lunch, dinner
+    meal_number INT NOT NULL CHECK (meal_number >= 0),
+    CONSTRAINT unique_meal_per_day UNIQUE (member_id, mess_id, date)
 );
 
 -- Deposits Table
