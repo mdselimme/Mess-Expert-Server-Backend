@@ -105,13 +105,30 @@ const checkAuth = [
     },
 ];
 
+
+// Update User Profile
+const updateUserProfile = catchAsync(async (req, res, next) => {
+    
+    const decodedToken = req.user;
+    const updatedUser = await AuthServices.updateUserProfile(req.body, decodedToken.id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "User profile updated successfully.",
+        data: updatedUser
+    });
+});
+
+
 const AuthController = {
     userLogOut,
     userRegister,
     checkAuth,
     logInUser,
     getMyDataByToken,
-    userPasswordReset
+    userPasswordReset,
+    updateUserProfile,
 };
 
 module.exports = AuthController;
