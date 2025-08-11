@@ -11,7 +11,7 @@ const pool = new Pool({
   password: envVars.DB_PASSWORD,
   port: envVars.DB_PORT,
   ssl: {
-    rejectUnauthorized: false
+    rejectUnauthorized: true
   }
 });
 
