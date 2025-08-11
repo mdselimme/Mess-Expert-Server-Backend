@@ -45,9 +45,9 @@ const createAnUser = async (payload) => {
 
     // Create member record
     await pool.query(
-        `INSERT INTO members (name, phone_number, image, joining_date, user_id)
-     VALUES ($1, $2, $3, CURRENT_DATE, $4)`,
-        [fullName, "01700000000", "https://i.ibb.co/M5C3p0pd/user-image.png", user.id]
+        `INSERT INTO members (name, phone_number, image, joining_date, user_id, email)
+        VALUES ($1, $2, $3, CURRENT_DATE, $4, $5)`,
+        [username, "01700000000", "https://i.ibb.co/M5C3p0pd/user-image.png", user.id, user.email]
     );
 
     await pool.query('COMMIT');
