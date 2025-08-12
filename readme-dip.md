@@ -135,7 +135,7 @@ http://localhost:5000/api/v1/
 ```
 
 ***Update User Data***
-_**PATCH** `/auth/update-userDat`
+_**PATCH** `/auth/update-userData`
 -**credentials** true
 
 -**Request Body Example:**
