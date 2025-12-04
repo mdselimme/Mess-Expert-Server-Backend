@@ -168,11 +168,42 @@ const userPasswordResetService = async (payload, decodedToken) => {
     return result.rows[0];
 };
 
+// User data update 
+const userDataUpdateService = async (payload, decodedToken) => {
+    const { fullName, username, phone_number } = payload;
+
+    const userFind = await pool.query('SELECT * FROM users WHERE id = $1', [decodedToken.id]);
+
+    if (!userFind.rows[0]) {
+        throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid User Id');
+    }
+
+    const updatedUser = await pool.query(
+        'UPDATE users SET fullname = $1, username = $2 WHERE id = $3 RETURNING *',
+        [fullName, username, decodedToken.id]
+    );
+
+    await pool.query(
+        'UPDATE Members SET phone_number = $1 WHERE user_id = $2',
+        [phone_number, decodedToken.id]
+    );
+
+    const updatedProfile = await pool.query(`
+        SELECT u.id, u.fullname, u.username, u.email, m.phone_number, m.image, m.role, m.joining_date
+        FROM users u
+        LEFT JOIN Members m ON u.id = m.user_id
+        WHERE u.id = $1
+    `, [decodedToken.id]);
+
+    return updatedProfile.rows[0];
+};
+
 
 const AuthServices = {
     logInUser,
     createAnUser,
     getMyDataByToken,
-    userPasswordResetService
+    userPasswordResetService,
+    userDataUpdateService
 }
 module.exports = AuthServices;

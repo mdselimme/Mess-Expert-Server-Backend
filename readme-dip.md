@@ -134,6 +134,39 @@ http://localhost:5000/api/v1/
 }
 ```
 
+***Update User Data***
+_**PATCH** `/auth/update-userData`
+-**credentials** true
+
+-**Request Body Example:**
+
+```json
+{
+    "fullName": "Shah Jalal",
+    "username": "dip",
+    "phone_number": "01627647267"
+}
+```
+Response:
+
+```json
+{
+    "statusCode": 200,
+    "success": true,
+    "message": "User Data Updated Successfully.",
+    "data": {
+        "id": 1,
+        "fullname": "Shah Jalal",
+        "username": "dip",
+        "email": "user@example.com",
+        "phone_number": "01627647267",
+        "image": null,
+        "role": "member",
+        "joining_date": "2025-08-10"
+    }
+}
+```
+
 #### **Check Auth**
 
 - **GET** `/auth/check`

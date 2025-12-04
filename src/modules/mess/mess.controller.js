@@ -208,7 +208,7 @@ const findValue = async (messId, start, end) => {
     const totalMealCost = await pool.query(
         `SELECT COALESCE(SUM(amount),0) AS total
              FROM Expenses 
-             WHERE mess_id=$1 AND date BETWEEN $2 AND $3 AND category='meal'`,
+             WHERE mess_id=$1 AND date BETWEEN $2 AND $3 AND category='mess'`,
         [messId, start, end]
     );
 
