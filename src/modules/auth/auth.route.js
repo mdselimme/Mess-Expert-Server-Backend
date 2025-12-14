@@ -20,7 +20,7 @@ router.patch("/reset-password",
 //Update User Data
 router.patch("/update-userData",
     authenticateToken,
-    AuthController.userDataUpdate);
+    AuthController.updateUserProfile);
 
 //Auth Check user
 router.get('/check', AuthController.checkAuth);
