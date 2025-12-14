@@ -29,6 +29,8 @@ router.get('/get-me',
     authenticateToken,
     AuthController.getMyDataByToken);
 
+// Update profile  
+router.patch('/update-profile', authenticateToken, AuthController.updateUserProfile);
 
 const AuthRouter = router;
 

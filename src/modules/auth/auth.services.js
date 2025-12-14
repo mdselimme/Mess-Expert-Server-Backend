@@ -168,35 +168,70 @@ const userPasswordResetService = async (payload, decodedToken) => {
     return result.rows[0];
 };
 
-// User data update 
-const userDataUpdateService = async (payload, decodedToken) => {
+
+
+// Update user profile
+const updateUserProfile = async (payload, userId) => {
     const { fullName, username, phone_number } = payload;
 
-    const userFind = await pool.query('SELECT * FROM users WHERE id = $1', [decodedToken.id]);
-
-    if (!userFind.rows[0]) {
-        throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid User Id');
+    if (!fullName && !username && !phone_number) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "At least one field is required.");
     }
 
-    const updatedUser = await pool.query(
-        'UPDATE users SET fullname = $1, username = $2 WHERE id = $3 RETURNING *',
-        [fullName, username, decodedToken.id]
-    );
+    // Check if user exists
+    const userCheck = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+    if (!userCheck.rows[0]) {
+        throw new AppError(StatusCodes.NOT_FOUND, "User not found.");
+    }
 
-    await pool.query(
-        'UPDATE Members SET phone_number = $1 WHERE user_id = $2',
-        [phone_number, decodedToken.id]
-    );
+    // Check if username exists for other users
+    if (username) {
+        const usernameExists = await pool.query(
+            'SELECT id FROM users WHERE username = $1 AND id != $2',
+            [username, userId]
+        );
+        if (usernameExists.rows.length > 0) {
+            throw new AppError(StatusCodes.BAD_REQUEST, "Username already in use.");
+        }
+    }
 
-    const updatedProfile = await pool.query(`
-        SELECT u.id, u.fullname, u.username, u.email, m.phone_number, m.image, m.role, m.joining_date
-        FROM users u
-        LEFT JOIN Members m ON u.id = m.user_id
-        WHERE u.id = $1
-    `, [decodedToken.id]);
+    // Build dynamic query
+    let query = 'UPDATE users SET';
+    const values = [];
+    let setParts = [];
+    let i = 1;
 
-    return updatedProfile.rows[0];
+    if (fullName) {
+        setParts.push(` fullname = $${i++} `);
+        values.push(fullName);
+    }
+    if (username) {
+        setParts.push(` username = $${i++} `);
+        values.push(username);
+    }
+    if (phone_number) {
+        // phone number is in members table
+        await pool.query(
+            'UPDATE members SET phone_number = $1 WHERE user_id = $2',
+            [phone_number, userId]
+        );
+    }
+
+    if (setParts.length > 0) {
+        query += setParts.join(', ') + ` WHERE id = $${i} RETURNING id, fullname, username, email`;
+        values.push(userId);
+        const updatedUser = await pool.query(query, values);
+        return updatedUser.rows[0];
+    } else {
+        // Only phone number updated
+        const updatedMember = await pool.query(
+            'SELECT * FROM members WHERE user_id = $1',
+            [userId]
+        );
+        return { phone_number: updatedMember.rows[0].phone_number };
+    }
 };
+
 
 
 const AuthServices = {
@@ -204,6 +239,6 @@ const AuthServices = {
     createAnUser,
     getMyDataByToken,
     userPasswordResetService,
-    userDataUpdateService
+    updateUserProfile,
 }
 module.exports = AuthServices;
