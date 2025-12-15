@@ -6,7 +6,7 @@ app.use(express.json()); //req.body
 app.use(cookieParser());
 //middleware
 app.use(cors({
-    origin: ["https://mess-expert-cline-site.vercel.app", "http://localhost:5173"],
+    origin: ["https://mess-expert-cline-site.vercel.app", "http://localhost:5173", "https://superlative-llama-22c934.netlify.app"],
     credentials: true
 }));
 const globalErrorHandler = require('../middleware/globalErrorHandler');
