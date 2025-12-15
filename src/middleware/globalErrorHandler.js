@@ -7,6 +7,11 @@ const globalErrorHandler = (error, req, res, next) => {
     let statusCode = 500;
     let message = `Something went wrong!! ${error.message}`;
 
+    console.error('=== Global Error Handler ===');
+    console.error('Error:', error);
+    console.error('Message:', error.message);
+    console.error('Stack:', error.stack);
+
     if (error instanceof AppError) {
         statusCode = error.statusCode;
         message = error.message;

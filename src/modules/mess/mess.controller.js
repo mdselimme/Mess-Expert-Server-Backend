@@ -1,11 +1,12 @@
 const pool = require("../../config/db");
+const catchAsync = require("../../utils/catchAsync");
 
 
 
 // Create mess and assign user as admin
-const createMess = async (req, res) => {
+const createMess = catchAsync(async (req, res) => {
     const { name, location } = req.body;
-    const userId = req.user.id;
+    const userId = req.user?.id || req.id;
 
     try {
         await pool.query('BEGIN');
@@ -57,15 +58,14 @@ const createMess = async (req, res) => {
         });
     } catch (err) {
         await pool.query('ROLLBACK');
-        console.error(err);
-        res.status(500).json({ error: 'Failed to create mess' });
+        throw err;
     }
-};
+});
 
-const addMemberToMess = async (req, res) => {
+const addMemberToMess = catchAsync(async (req, res) => {
     const { messId } = req.params;
     const { email } = req.body;
-    const adminUserId = req.user.id;
+    const adminUserId = req.user?.id || req.id;
 
     if (!email) {
         return res.status(400).json({ error: 'Email is required to add a member' });
@@ -147,48 +147,52 @@ const addMemberToMess = async (req, res) => {
         });
     } catch (err) {
         await pool.query('ROLLBACK');
-        console.error(err);
-        res.status(500).json({ error: 'Failed to add member' });
+        throw err;
     }
-};
+});
 
 // Get mess members
-const getMessMembers = async (req, res) => {
+const getMessMembers = catchAsync(async (req, res) => {
     const { messId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user?.id || req.id;
 
-    try {
-        // Check if user is a member of this mess
-        const memberCheck = await pool.query(
-            `SELECT m.member_id, m.role
-             FROM Members m
-             JOIN MemberMess mm ON m.member_id = mm.member_id
-             WHERE m.user_id = $1 AND mm.mess_id = $2`,
-            [userId, messId]
-        );
-
-        if (memberCheck.rows.length === 0) {
-            return res.status(403).json({ error: 'Not a member of this mess' });
-        }
-
-        const members = await pool.query(
-            `SELECT m.member_id, m.name, m.email, m.phone_number, m.role, m.joining_date
-             FROM Members m
-             JOIN MemberMess mm ON m.member_id = mm.member_id
-             WHERE mm.mess_id = $1
-             ORDER BY m.role DESC, m.joining_date ASC`,
-            [messId]
-        );
-
-        res.json({
-            members: members.rows,
-            total_members: members.rows.length
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to get mess members' });
+    if (!userId) {
+        return res.status(401).json({ error: 'User authentication required' });
     }
-};
+
+    console.log('Checking if user is member of mess...');
+    // Check if user is a member of this mess
+    const memberCheck = await pool.query(
+        `SELECT m.member_id, m.role
+         FROM Members m
+         JOIN MemberMess mm ON m.member_id = mm.member_id
+         WHERE m.user_id = $1 AND mm.mess_id = $2`,
+        [userId, messId]
+    );
+    console.log('Member check result:', memberCheck.rows);
+
+    if (memberCheck.rows.length === 0) {
+        console.log('User is not a member of this mess');
+        return res.status(403).json({ error: 'Not a member of this mess' });
+    }
+
+    console.log('Fetching all members...');
+    const members = await pool.query(
+        `SELECT m.member_id, m.name, u.email, m.phone_number, m.role, m.joining_date
+         FROM Members m
+         JOIN MemberMess mm ON m.member_id = mm.member_id
+         LEFT JOIN users u ON m.user_id = u.id
+         WHERE mm.mess_id = $1
+         ORDER BY m.role DESC, m.joining_date ASC`,
+        [messId]
+    );
+    console.log('Members fetched successfully:', members.rows.length, 'members');
+
+    res.json({
+        members: members.rows,
+        total_members: members.rows.length
+    });
+});
 
 function getMonthDateRange(month) {
     const [year, mon] = month.split('-');
@@ -216,145 +220,78 @@ const findValue = async (messId, start, end) => {
     return { totalMeal, totalMealCost, mealRate };
 }
 
-const getMessSummary = async (req, res) => {
+const getMessSummary = catchAsync(async (req, res) => {
     const { messId } = req.params;
     const { month } = req.query;
     if (!month) return res.status(400).json({ error: 'month is required (YYYY-MM)' });
     const { start, end } = getMonthDateRange(month);
-    try {
-        const totalDeposit = await pool.query(
-            `SELECT COALESCE(SUM(amount),0) AS total 
+
+    const totalDeposit = await pool.query(
+        `SELECT COALESCE(SUM(amount),0) AS total 
              FROM Deposits 
              WHERE mess_id=$1 AND date BETWEEN $2 AND $3`,
-            [messId, start, end]
-        );
+        [messId, start, end]
+    );
 
-        const { totalMeal, totalMealCost, mealRate } = await findValue(messId, start, end);
+    const { totalMeal, totalMealCost, mealRate } = await findValue(messId, start, end);
 
-        const messBalance = (parseFloat(totalDeposit.rows[0].total) - parseFloat(totalMealCost.rows[0].total)).toFixed(2);
+    const messBalance = (parseFloat(totalDeposit.rows[0].total) - parseFloat(totalMealCost.rows[0].total)).toFixed(2);
 
-        // Other costs
-        const indivOtherQ = await pool.query(
-            `SELECT COALESCE(SUM(amount),0) AS total 
+    // Other costs
+    const indivOtherQ = await pool.query(
+        `SELECT COALESCE(SUM(amount),0) AS total 
              FROM Expenses 
              WHERE mess_id=$1 AND date BETWEEN $2 AND $3 AND category='individual'`,
-            [messId, start, end]
-        );
-        const sharedOtherQ = await pool.query(
-            `SELECT COALESCE(SUM(amount),0) AS total 
+        [messId, start, end]
+    );
+    const sharedOtherQ = await pool.query(
+        `SELECT COALESCE(SUM(amount),0) AS total 
              FROM Expenses 
              WHERE mess_id=$1 AND date BETWEEN $2 AND $3 AND category='shared'`,
-            [messId, start, end]
-        );
-        res.json({
-            messBalance,
-            totalDeposit: parseFloat(totalDeposit.rows[0].total),
-            messTotalMeal: parseFloat(totalMeal.rows[0].total),
-            messTotalMealCost: parseFloat(totalMealCost.rows[0].total),
-            messMealRate: parseFloat(mealRate),
-            totalIndividualOtherCost: parseFloat(indivOtherQ.rows[0].total),
-            totalSharedOtherCost: parseFloat(sharedOtherQ.rows[0].total)
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to get mess summary' });
-    }
-};
+        [messId, start, end]
+    );
+    res.json({
+        messBalance,
+        totalDeposit: parseFloat(totalDeposit.rows[0].total),
+        messTotalMeal: parseFloat(totalMeal.rows[0].total),
+        messTotalMealCost: parseFloat(totalMealCost.rows[0].total),
+        messMealRate: parseFloat(mealRate),
+        totalIndividualOtherCost: parseFloat(indivOtherQ.rows[0].total),
+        totalSharedOtherCost: parseFloat(sharedOtherQ.rows[0].total)
+    });
+});
 
-const getAllMemberSummary = async (req, res) => {
+const getAllMemberSummary = catchAsync(async (req, res) => {
     const { messId } = req.params;
     const { month } = req.query;
     if (!month) return res.status(400).json({ error: 'month is required (YYYY-MM)' });
     const { start, end } = getMonthDateRange(month);
-    try {
-        const members = await pool.query(
-            `SELECT m.member_id, m.name 
+
+    const members = await pool.query(
+        `SELECT m.member_id, m.name 
              FROM Members m
              JOIN MemberMess mm ON m.member_id = mm.member_id
              WHERE mm.mess_id = $1`, [messId]
-        );
-        const results = [];
-        for (const member of members.rows) {
-            const [tMeal, tDeposit, tIndiv, tShared] = await Promise.all([
-                pool.query(`SELECT COUNT(*) AS total 
-                            FROM Meals 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`,
-                    [member.member_id, messId, start, end]),
-                pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
-                            FROM Deposits 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`,
-                    [member.member_id, messId, start, end]),
-                pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
-                            FROM Expenses 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='individual'`,
-                    [member.member_id, messId, start, end]),
-                pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
-                            FROM Expenses 
-                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='shared'`,
-                    [member.member_id, messId, start, end]),
-            ]);
-
-            const { totalMeal, totalMealCost, mealRate } = await findValue(messId, start, end);
-
-            const meal = parseFloat(tMeal.rows[0].total);
-            const deposit = parseFloat(tDeposit.rows[0].total);
-            const indivOther = parseFloat(tIndiv.rows[0].total);
-            const sharedOther = parseFloat(tShared.rows[0].total);
-            const mealCost = meal > 0 ? meal * mealRate : '0.00';
-            const totalCost = mealCost + indivOther + sharedOther;
-            const balance = deposit - totalCost;
-            results.push({
-                name: member.name,
-                totalMeal: meal,
-                mealCost,
-                sharedOtherCost: sharedOther,
-                individualOtherCost: indivOther,
-                totalCost,
-                deposit,
-                balance
-            });
-        }
-        res.json({ members: results });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to get all member summary' });
-    }
-};
-
-const getPersonalSummary = async (req, res) => {
-    const { messId } = req.params;
-    const { month } = req.query;
-    const userId = req.user.id;
-    if (!month) return res.status(400).json({ error: 'month is required (YYYY-MM)' });
-    const { start, end } = getMonthDateRange(month);
-    try {
-        const member = await pool.query(
-            `SELECT m.member_id, m.name
-             FROM Members m
-             JOIN MemberMess mm ON m.member_id = mm.member_id
-             WHERE m.user_id = $1 AND mm.mess_id = $2`, [userId, messId]
-        );
-
-        if (member.rows.length === 0) return res.status(403).json({ error: 'Not a member of this mess' });
-        const member_id = member.rows[0].member_id;
-
+    );
+    const results = [];
+    for (const member of members.rows) {
         const [tMeal, tDeposit, tIndiv, tShared] = await Promise.all([
             pool.query(`SELECT COUNT(*) AS total 
                             FROM Meals 
                             WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`,
-                [member_id, messId, start, end]),
+                [member.member_id, messId, start, end]),
             pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
                             FROM Deposits 
                             WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`,
-                [member_id, messId, start, end]),
+                [member.member_id, messId, start, end]),
             pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
                             FROM Expenses 
                             WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='individual'`,
-                [member_id, messId, start, end]),
+                [member.member_id, messId, start, end]),
             pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
                             FROM Expenses 
                             WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='shared'`,
-                [member_id, messId, start, end]),
+                [member.member_id, messId, start, end]),
         ]);
 
         const { totalMeal, totalMealCost, mealRate } = await findValue(messId, start, end);
@@ -366,7 +303,7 @@ const getPersonalSummary = async (req, res) => {
         const mealCost = meal > 0 ? meal * mealRate : '0.00';
         const totalCost = mealCost + indivOther + sharedOther;
         const balance = deposit - totalCost;
-        res.json({
+        results.push({
             name: member.name,
             totalMeal: meal,
             mealCost,
@@ -376,11 +313,66 @@ const getPersonalSummary = async (req, res) => {
             deposit,
             balance
         });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to get personal summary' });
     }
-};
+    res.json({ members: results });
+});
+
+const getPersonalSummary = catchAsync(async (req, res) => {
+    const { messId } = req.params;
+    const { month } = req.query;
+    const userId = req.user?.id || req.id;
+    if (!month) return res.status(400).json({ error: 'month is required (YYYY-MM)' });
+    const { start, end } = getMonthDateRange(month);
+
+    const member = await pool.query(
+        `SELECT m.member_id, m.name
+             FROM Members m
+             JOIN MemberMess mm ON m.member_id = mm.member_id
+             WHERE m.user_id = $1 AND mm.mess_id = $2`, [userId, messId]
+    );
+
+    if (member.rows.length === 0) return res.status(403).json({ error: 'Not a member of this mess' });
+    const member_id = member.rows[0].member_id;
+
+    const [tMeal, tDeposit, tIndiv, tShared] = await Promise.all([
+        pool.query(`SELECT COUNT(*) AS total 
+                            FROM Meals 
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`,
+            [member_id, messId, start, end]),
+        pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
+                            FROM Deposits 
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4`,
+            [member_id, messId, start, end]),
+        pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
+                            FROM Expenses 
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='individual'`,
+            [member_id, messId, start, end]),
+        pool.query(`SELECT COALESCE(SUM(amount),0) AS total 
+                            FROM Expenses 
+                            WHERE member_id=$1 AND mess_id=$2 AND date BETWEEN $3 AND $4 AND category='shared'`,
+            [member_id, messId, start, end]),
+    ]);
+
+    const { totalMeal, totalMealCost, mealRate } = await findValue(messId, start, end);
+
+    const meal = parseFloat(tMeal.rows[0].total);
+    const deposit = parseFloat(tDeposit.rows[0].total);
+    const indivOther = parseFloat(tIndiv.rows[0].total);
+    const sharedOther = parseFloat(tShared.rows[0].total);
+    const mealCost = meal > 0 ? meal * mealRate : '0.00';
+    const totalCost = mealCost + indivOther + sharedOther;
+    const balance = deposit - totalCost;
+    res.json({
+        name: member.name,
+        totalMeal: meal,
+        mealCost,
+        sharedOtherCost: sharedOther,
+        individualOtherCost: indivOther,
+        totalCost,
+        deposit,
+        balance
+    });
+});
 
 
 const MessController = {
